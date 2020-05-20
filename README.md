@@ -1,4 +1,32 @@
 # openair-cn-cups
+
+## Build spgwu docker image
+
+```
+make docker-build
+```
+
+## Build spgwu in debug mode
+
+```
+make debug
+```
+
+## Clean spgwu generated artifacts 
+
+```
+make clean
+```
+
+## Login spgwu docker container in bash mode
+
+```
+make shell-run
+```
+
+## Notes
+
+```
 Control User Plane Separation of SPGW-C and SPGW-U
 ├── http://www.openairinterface.org/?page_id=698 
 
@@ -34,3 +62,4 @@ openair-cn-cups
 RELEASE NOTES:
 
 v1.0.0 -> First release, Able to serve a MME with basic attach, detach, release, paging procedures, default bearer only.
+```
