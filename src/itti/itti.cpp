@@ -42,42 +42,75 @@ static itti_timer null_timer(ITTI_INVALID_TIMER_ID, TASK_NONE, 0xFFFFFFFF, 0xFFF
 void itti_mw::timer_manager_task(const util::thread_sched_params& sched_params)
 {
   Logger::itti().info("Starting timer_manager_task");
+  // Apply schedule params to current thread
   sched_params.apply(TASK_ITTI_TIMER, Logger::itti());
   while (true) {
+    // check if thread terminate
     if (itti_inst->terminate) return;
     {
+      // create unique lock for mutex timer and acquire the lock
       std::unique_lock<std::mutex> lx(itti_inst->m_timers);
+
+      // wait until exists a timer. A notify event should wake-up the thread
       while (itti_inst->timers.empty()) {
         itti_inst->c_timers.wait(lx);
       }
+      
+      // get the timer with the time_out nearest to now
       std::set<itti_timer>::iterator it = itti_inst->timers.begin();
+
+      // save the timer to the current timer variable
       itti_inst->current_timer = std::ref(*it);
+
+      // erase the timer that was saved
       itti_inst->timers.erase(it);
+
+      // unlock
       lx.unlock();
 
-      // check time-out
+      // check time-out with the current system clock
       if (itti_inst->current_timer.time_out > std::chrono::system_clock::now()) {
+        // the time did not reach the timeout
+
+        // acquire the m_timeout 
         std::unique_lock<std::mutex> lto(itti_inst->m_timeout);
+
+        // get the diffence between the time out and now
         auto diff =  itti_inst->current_timer.time_out - std::chrono::system_clock::now();
+
+        // wait until the time reach now
         auto rc = itti_inst->c_timeout.wait_for( lto, diff);
+        
+        // unlock
         lto.unlock();
+
+        // check if it is really the timeout
         if ( std::cv_status::timeout == rc) {
+          // now it is the timeout
+
           // signal time-out
           itti_msg_timeout mto(TASK_ITTI_TIMER, itti_inst->current_timer.task_id, itti_inst->current_timer.id, itti_inst->current_timer.arg1_user, itti_inst->current_timer.arg2_user);
           std::shared_ptr<itti_msg_timeout> msgsh = std::make_shared<itti_msg_timeout>(mto);
           int ret = itti_inst->send_msg(msgsh);
         } else {
-          // other timer required ?
+          // other timer required 
+
+          // acquire the lock
           itti_inst->m_timers.lock();
+
           if (itti_inst->current_timer.id != ITTI_INVALID_TIMER_ID) {
+            // store again
             itti_inst->timers.insert(itti_inst->current_timer);
           }
+          
           itti_inst->current_timer = null_timer;
           itti_inst->m_timers.unlock();
           //cout << "cv.wait released by other triggered timer end" << endl;
         }
       } else {
         // signal time-out
+
+        // TODO: check the latency 
         itti_msg_timeout mto(TASK_ITTI_TIMER, itti_inst->current_timer.task_id, itti_inst->current_timer.id, itti_inst->current_timer.arg1_user, itti_inst->current_timer.arg2_user);
         std::shared_ptr<itti_msg_timeout> msgsh = std::make_shared<itti_msg_timeout>(mto);
         itti_inst->send_msg(msgsh);
@@ -131,10 +164,20 @@ int itti_mw::create_task (const task_id_t task_id,
     Logger::itti().error("Null start routine for task %d", task_id);
     return RETURNerror;
   }
+
+  // check if the task to be create is in the range allowed
   if ((TASK_FIRST <= task_id) && (TASK_MAX > task_id)) {
+    // task id is in the range 
+
+    // check if there is a task with the same task id created
     if (itti_task_ctxts[task_id] == nullptr) {
+      // no, there is not
+
+      // create a new task context in the pool
       itti_task_ctxts[task_id] = new itti_task_ctxt(task_id);
       {
+        // create a mutex
+        // @navarro: why?
         std::unique_lock<std::mutex> lk(itti_task_ctxts[task_id]->m_state);
         if (itti_task_ctxts[task_id]->task_state == TASK_STATE_NOT_CONFIGURED) {
           itti_task_ctxts[task_id]->task_state = TASK_STATE_STARTING;

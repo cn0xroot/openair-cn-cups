@@ -72,7 +72,7 @@ public:
 };
 
 //------------------------------------------------------------------------------
-struct timer_comparator {
+struct timer_comparator{
     bool operator()(const itti_timer &left, const itti_timer &right) const
     {
         return (left.time_out < right.time_out);
@@ -105,6 +105,7 @@ public:
 
 class itti_mw {
 private:
+  // context task pool
   itti_task_ctxt   *itti_task_ctxts[TASK_MAX];
 
   /*
@@ -118,6 +119,7 @@ private:
   std::atomic<int>                          created_tasks;
   std::atomic<int>                          ready_tasks;
 
+  // set of itti_timer sorted by time_out of each time 
   std::set<itti_timer, timer_comparator>    timers;
   itti_timer                                current_timer;
   std::mutex                                m_timers;
