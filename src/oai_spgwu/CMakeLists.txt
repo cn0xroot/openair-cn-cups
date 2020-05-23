@@ -288,6 +288,7 @@ include_directories(${SRC_TOP_DIR}/spgwu)
 include_directories(${SRC_TOP_DIR}/spgwu/simpleswitch)
 include_directories(${SRC_TOP_DIR}/udp)
 include_directories(${SRC_TOP_DIR}/../build/ext/spdlog/include)
+include_directories(${SRC_TOP_DIR}/../../test/integration)
 
 add_executable(spgwu
   ${SRC_TOP_DIR}/oai_spgwu/main.cpp

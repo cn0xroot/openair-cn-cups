@@ -110,7 +110,7 @@ void itti_mw::timer_manager_task(const util::thread_sched_params& sched_params)
       } else {
         // signal time-out
 
-        // TODO: check the latency 
+        // TODO @navarro: check the latency 
         itti_msg_timeout mto(TASK_ITTI_TIMER, itti_inst->current_timer.task_id, itti_inst->current_timer.id, itti_inst->current_timer.arg1_user, itti_inst->current_timer.arg2_user);
         std::shared_ptr<itti_msg_timeout> msgsh = std::make_shared<itti_msg_timeout>(mto);
         itti_inst->send_msg(msgsh);
@@ -177,7 +177,7 @@ int itti_mw::create_task (const task_id_t task_id,
       itti_task_ctxts[task_id] = new itti_task_ctxt(task_id);
       {
         // create a mutex
-        // @navarro: why?
+        // TODO @navarro: why?
         std::unique_lock<std::mutex> lk(itti_task_ctxts[task_id]->m_state);
         if (itti_task_ctxts[task_id]->task_state == TASK_STATE_NOT_CONFIGURED) {
           itti_task_ctxts[task_id]->task_state = TASK_STATE_STARTING;
@@ -185,8 +185,14 @@ int itti_mw::create_task (const task_id_t task_id,
         created_tasks++;
         lk.unlock();
       }
+
+      // store thread in context pool
       itti_task_ctxts[task_id]->thread = std::thread(start_routine,args_p);
+
+      // wait state change. The start_routine should change it in the thread create above
+      // by calling itti_mw::notify_task_ready method
       while ((itti_task_ctxts[task_id]->task_state != TASK_STATE_READY) && (itti_task_ctxts[task_id]->task_state != TASK_STATE_ENDED))
+        // TODO @navarro: check better way instead of usleep
         usleep (1000);
       return 0;
     } else {

@@ -116,6 +116,7 @@ private:
   std::mutex                                m_timer_id;
   std::thread                               timer_thread;
 
+  // number of task created
   std::atomic<int>                          created_tasks;
   std::atomic<int>                          ready_tasks;
 
@@ -173,12 +174,14 @@ public:
    * \param start_routine entry point for the task
    * \param args_p Optional argument to pass to the start routine
    * @returns -1 on failure, 0 otherwise
+   * @todo @navarro: avoid pass void in parameters. C++ has best practic
    **/
   int create_task (const task_id_t task_id,
       void (*start_routine) (void *),
       void *args_p);
 
   /** \brief Notify ITTI of a started thread
+   * The state of the task is set to TASK_STATE_READY
    * \param task_id of started task
    * \param start_routine entry point for the task
    * \param args_p Optional argument to pass to the start routine

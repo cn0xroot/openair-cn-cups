@@ -101,7 +101,10 @@ private:
 #define PFCP_SWITCH_MIN_COMMIT_INTERVAL_MILLISECONDS  50
 
   //switching_data_per_cpu_socket             switching_data[];
-  struct iovec                              msg_iov_;        /* scatter/gather array */
+  
+   // scatter/gather array 
+  struct iovec                              msg_iov_;        
+
   std::unordered_map<pfcp::fseid_t, std::shared_ptr<pfcp::pfcp_session>>                        cp_fseid2pfcp_sessions;
   folly::AtomicHashMap<uint64_t, std::shared_ptr<pfcp::pfcp_session>>                           up_seid2pfcp_sessions;
   folly::AtomicHashMap<teid_t, std::shared_ptr<std::vector<std::shared_ptr<pfcp::pfcp_pdr>>>>   ul_s1u_teid2pfcp_pdr;
@@ -109,9 +112,15 @@ private:
 
   //moodycamel::ConcurrentQueue<pfcp::pfcp_session*>            create_session_q;
 
+  
   void pdn_read_loop(const util::thread_sched_params& sched_params);
   int create_pdn_socket (const char * const ifname, const bool promisc, int& if_index);
   int create_pdn_socket (const char * const ifname);
+
+  /**
+   * @brief Set the up pdn interfaces object
+   * Condigure ipv4 for the interface created
+   */
   void setup_pdn_interfaces();
 
   timer_id_t timer_max_commit_interval_id;

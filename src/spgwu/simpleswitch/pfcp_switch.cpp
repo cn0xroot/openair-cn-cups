@@ -169,6 +169,8 @@ int pfcp_switch::create_pdn_socket (const char * const ifname, const bool promis
    * The  socket_type is either SOCK_RAW for raw packets including the link-level header or SOCK_DGRAM for cooked packets with the link-level header removed.
    */
 
+  // Create a socket to work link layers protocols without headers.
+  // https://manpages.ubuntu.com/manpages/precise/man7/packet.7.html 
   if ((sd = socket (AF_PACKET, SOCK_DGRAM, htons(ETH_P_ALL))) < 0) {
     /*
      * Socket creation has failed...
@@ -181,6 +183,10 @@ int pfcp_switch::create_pdn_socket (const char * const ifname, const bool promis
   if (ifname) {
     struct ifreq ifr = {};
     strncpy ((char *) ifr.ifr_name, ifname, IFNAMSIZ);
+
+    // Socket interface to configure network device.
+    // Retrieve the interface index of the interface into ifr_ifindex.
+    // http://man7.org/linux/man-pages/man7/netdevice.7.html
     if (ioctl (sd, SIOCGIFINDEX, &ifr) < 0) {
       Logger::pfcp_switch().error( "Get interface index failed (%s) for %s", strerror (errno), ifname);
       close (sd);
@@ -193,6 +199,15 @@ int pfcp_switch::create_pdn_socket (const char * const ifname, const bool promis
     sll.sll_family = AF_PACKET;          /* Always AF_PACKET */
     sll.sll_protocol = htons(ETH_P_ALL); /* Physical-layer protocol */
     sll.sll_ifindex = ifr.ifr_ifindex;   /* Interface number */
+    
+    // When a socket is created with socket(2), it exists in a name space
+    // (address family) but has no address assigned to it.  bind() assigns
+    // the address specified by addr to the socket referred to by the file
+    // descriptor sockfd.  addrlen specifies the size, in bytes, of the
+    // address structure pointed to by addr.  Traditionally, this operation
+    // is called “assigning a name to a socket”
+    // The address is represented by ifr_ifindex.
+    // http://man7.org/linux/man-pages/man2/bind.2.html
     if (bind (sd, (struct sockaddr *)&sll, sizeof (sll)) < 0) {
       /*
        * Bind failed
@@ -257,6 +272,8 @@ int pfcp_switch::create_pdn_socket (const char * const ifname)
 void pfcp_switch::setup_pdn_interfaces()
 {
   std::string cmd = fmt::format("ip link set dev {0} down > /dev/null 2>&1; ip link del {0} > /dev/null 2>&1; sync; sleep 1; ip link add {0} type dummy; ip link set dev {0} up", PDN_INTERFACE_NAME);
+
+  // create pdn interface
   int rc = system ((const char*)cmd.c_str());
 
   for (auto it : spgwu_cfg.pdns) {
@@ -268,6 +285,11 @@ void pfcp_switch::setup_pdn_interfaces()
       rc = system ((const char*)cmd.c_str());
 
       if (it.snat) {
+        // NAT - a table that is consulted when a packet tries to create a new connection. 
+        // POSTROUTING – used for altering packets as they are about to go out.
+        // Change NAT table, adding one rule (-A) for POSTROUTING chain with the action (-j) 
+        // of rewriting source NAT addr (SNAT) with the addr that was defined in config file
+        // (spgwu_cfg.sgi.addr4)
         cmd = fmt::format("iptables -t nat -A POSTROUTING -s {}/{} -j SNAT --to-source {}",
                           conv::toString(address4).c_str(),
                           it.prefix_ipv4,

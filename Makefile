@@ -34,22 +34,22 @@ define build
 endef
 
 
-debug: ## Realiza build modo Debug
+debug: ## Build in Debug mode
 	docker-build
 	$(call build)
 
 
-clean: ## Limpa artefatos gerados
+clean: ## Clean generated artifects
 	docker run -it -v  $(PROJECT_DIR):$(PROJECT_DIR)   \
 	$(IMAGE_CROSS) /bin/bash -c \
 	'cd $(PROJECT_DIR)/build/Debug && make clean && \
 	cd $(PROJECT_DIR)/build/Release && make clean'
 
-shell-run: ## Entra na linha de comando do container de execução
+shell-run: ## Login in docker bash mode
 	docker run -it --workdir $(WORK_CONTAINER_DIR) -v $(PROJECT_DIR):$(PROJECT_DIR)   \
 	$(IMAGE_NAME) /bin/bash
     
-docker-build:
+docker-build: ## Build docker image
 	docker build --build-arg UID=$$(id -u) --build-arg GID=$$(id -g) -t $(IMAGE_NAME) docker/.
 
     
