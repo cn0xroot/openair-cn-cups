@@ -1,0 +1,112 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Rebuild spgwu",
+            "command": "./build/scripts/build_spgwu",
+            "type": "shell",
+            "args": [
+                "-v",
+                "-b",
+                "Debug",
+                "-j"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": "$msCompile"
+
+        },
+        {
+            "label": "Build spgwu",
+            "command": "./build/scripts/build_spgwu",
+            "type": "shell",
+            "args": [
+                "-c",
+                "-V",
+                "-b",
+                "Debug",
+                "-j"            
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": "$msCompile"
+
+        },
+        {
+            "label": "Build spgwc",
+            "command": "./build/scripts/build_spgwc",
+            "type": "shell",
+            "args": [
+                "-c",
+                "-V",
+                "-b",
+                "Debug",
+                "-j"            
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": "$msCompile"
+
+        },
+        {
+            "label": "Build spgwu test",
+            "command": "./build/scripts/build_spgwu",
+            "type": "shell",
+            "args": [
+                "-c",
+                "-V",
+                "-b",
+                "Debug",
+                "-j"            
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": "$msCompile"
+
+        },
+        {
+            "label": "Install dep spgwu",
+            "command": "./build/scripts/build_spgwu",
+            "type": "shell",
+            "args": [
+                "-I",
+                "-f"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": "$msCompile"
+
+        },
+        {
+            "label": "Test spgwu",
+            "command": "/usr/local/bin/spgwu",
+            "args": [
+                "-c",
+                "./etc/spgw_u-dev.conf",
+            ],
+            "type": "process",
+            "group": "test",
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "Kill all spwgu process",
+            "type": "shell",
+            "command": "kill -9 $(ps -aux | grep spgwu | awk '{print $2}')",
+            "problemMatcher": []
+        } 
+    ]
+}
