@@ -37,6 +37,21 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367 &&
 RUN apt-get update && \
       apt-get -y install iptables
 
+RUN apt-get update && \
+      apt-get -y install iputils-ping
+
+RUN apt-get update \
+      # Install Docker CE CLI
+      # The idea is to run docker network connect inside the container
+      && apt-get install -y apt-transport-https ca-certificates curl gnupg2 lsb-release \
+      && curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/gpg | apt-key add - 2>/dev/null \
+      && echo "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list \
+      && apt-get update \
+      && apt-get install -y docker-ce-cli \
+      # Install Docker Compose
+      && LATEST_COMPOSE_VERSION=$(curl -sSL "https://api.github.com/repos/docker/compose/releases/latest" | grep -o -P '(?<="tag_name": ").+(?=")') \
+      && curl -sSL "https://github.com/docker/compose/releases/download/${LATEST_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
+      && chmod +x /usr/local/bin/docker-compose
 
 # Creates openair-cn-cups user. The password is the username. 
 #RUN useradd -m openair-cn-cups && echo "openair-cn-cups:openair-cn-cups" | chpasswd && adduser openair-cn-cups sudo
@@ -59,6 +74,17 @@ RUN groupadd -g ${GID} $UNAME && useradd -u ${UID} -g $UNAME -G sudo -m -s /bin/
     echo "Customized the sudoers file for passwordless access to the $UNAME user!" && \
     echo "$UNAME user:";  su - $UNAME -c id
 
+# Persiste bash history
+# https://code.visualstudio.com/docs/remote/containers-advanced#_persist-bash-history-between-runs
+# FIXME: Do not forget to remove \ in the end of the last line
+RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
+      && echo $SNIPPET >> "/root/.bashrc" \
+      # [Optional] If you have a non-root user
+      && mkdir /commandhistory \
+      && touch /commandhistory/.bash_history \
+      && chown -R $UNAME /commandhistory \
+      && echo $SNIPPET >> "/home/$UNAME/.bashrc" 
+ 
 USER root
 #USER $UNAME
 

@@ -15,10 +15,10 @@
 
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
-		"twxs.cmake",
 		"ms-vscode.cmake-tools",
 		"ms-vscode.cpptools",
-		"vscoss.vscode-ansible"
+		"twxs.cmake"
+		// "vscoss.vscode-ansible"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
@@ -28,12 +28,13 @@
 	// "postCreateCommand": "apt-get update && apt-get install -y git",
 
 	// Uncomment when using a ptrace-based debugger like C++, Go, and Rust
-	"runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined", "--cap-add=NET_ADMIN", "--privileged" ],
+	"runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined", "--cap-add=NET_ADMIN", "--privileged", "--name=openair-cn-cups"],
 
-	// connect host
-	// "postCreateCommand": "docker connect ",
 	// Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-in-docker.
-	"mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
+	// Mounts persitent history. See https://code.visualstudio.com/docs/remote/containers-advanced#_persist-bash-history-between-runs.
+	"mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+				 "source=openair-cn-cups-bashhistory,target=/commandhistory,type=volume"
+	]
 
 	// Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
 	//"remoteUser": "oai-spgwu"
