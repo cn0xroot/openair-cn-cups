@@ -24,6 +24,15 @@ make clean
 make shell-run
 ```
 
+## IP Mapping
+
+This mapping is based on the [diagram](https://github.com/navarrothiago/masters/wiki/OpenAirInterface#lte-test-environment)
+``` 
+VM -> Docker
+192.168.15.14 -> 192.168.15.2
+10.50.11.227 -> 172.17.0.2
+```
+
 ## Notes
 
 ```

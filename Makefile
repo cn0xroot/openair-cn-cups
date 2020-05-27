@@ -49,6 +49,16 @@ shell-run: ## Login in docker bash mode
 	docker run -it --workdir $(WORK_CONTAINER_DIR) -v $(PROJECT_DIR):$(PROJECT_DIR)   \
 	$(IMAGE_NAME) /bin/bash
     
+docker-create-network: ## Create macvlan with subnet 192.168.15.0 using enp0s20f0u1 interface
+	docker network create -d macvlan --subnet=192.168.15.0/24 --gateway=192.168.15.1 -o parent=enp0s20f0u1 macvlan-enp0s20f0u1
+
+docker-connect-network: ## Connect maclan on container openair-cn-cups
+	docker network connect macvlan-enp0s20f0u1 openair-cn-cups
+
+docker-run: ## Login in docker bash mode
+	docker run -it --workdir $(WORK_CONTAINER_DIR) -v $(PROJECT_DIR):$(PROJECT_DIR)   \
+	$(IMAGE_NAME) /bin/bash -c './build/spgw_u/build/spgwu -c ./etc/spgw_u-dev.conf'
+ 
 docker-build: ## Build docker image
 	docker build --build-arg UID=$$(id -u) --build-arg GID=$$(id -g) -t $(IMAGE_NAME) docker/.
 
