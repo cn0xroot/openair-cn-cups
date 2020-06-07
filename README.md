@@ -1,37 +1,54 @@
 # openair-cn-cups
 
-## Build spgwu docker image
+## Development - First steps using Visual Studio Code
 
-```
-make docker-build
-```
+1. Download vscode available [here](https://code.visualstudio.com/download)
+1. Clone the repository openair-cn-cups
+1. Open the console in your workspace
+1. Create a macvlan docker network  running ```make docker-create-network```. It is assumed that you have two network device, one of them is the enp0s20f0u1 (See [Makefile](Makefile)).
+1. Setup "[Developing inside a Container](https://code.visualstudio.com/docs/remote/container)" in vscode
+1. [Open the repository workspace using vscode in a conteiner](https://code.visualstudio.com/docs/remote/containers#_open-an-existing-workspace-in-a-container) (it will take some time)
+1. Setup conteiner network: ```make docker-setup-network```  
 
-## Build spgwu in debug mode
+## Environment
 
-```
-make debug
-```
+See [environment.](https://github.com/navarrothiago/masters/wiki/OpenAirInterface#lte-test-environment)
 
-## Clean spgwu generated artifacts 
+### IP Mapping
 
-```
-make clean
-```
-
-## Login spgwu docker container in bash mode
-
-```
-make shell-run
-```
-
-## IP Mapping
-
-This mapping is based on the [diagram](https://github.com/navarrothiago/masters/wiki/OpenAirInterface#lte-test-environment)
 ``` 
 VM -> Docker
 192.168.15.14 -> 192.168.15.2
 10.50.11.227 -> 172.17.0.2
 ```
+
+## Other commands
+
+### Build spgwu docker image
+
+```
+make docker-build
+```
+
+### Build spgwu in debug mode
+
+```
+make debug
+```
+
+### Clean spgwu generated artifacts 
+
+```
+make clean
+```
+
+### Login spgwu docker container in bash mode
+
+```
+make shell-run
+```
+
+
 
 ## Notes
 
