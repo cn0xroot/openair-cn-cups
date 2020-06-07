@@ -75,12 +75,15 @@
 
         },
         {
+
             "label": "Install dep spgwu",
             "command": "./build/scripts/build_spgwu",
             "type": "shell",
             "args": [
                 "-I",
-                "-f"
+                "-f",
+                "-b",
+                "Debug", // Build Debug in order to compile googletest 
             ],
             "group": "build",
             "presentation": {

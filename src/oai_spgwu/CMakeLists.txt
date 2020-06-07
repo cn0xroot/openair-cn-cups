@@ -270,8 +270,7 @@ ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/pfcp ${CMAKE_CURRENT_BINA
 ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/spgwu/simpleswitch ${CMAKE_CURRENT_BINARY_DIR}/simpleswitch)
 ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/gtpv1u ${CMAKE_CURRENT_BINARY_DIR}/gtpv1u)
 ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/udp ${CMAKE_CURRENT_BINARY_DIR}/udp)
-
-
+ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../test/integration ${CMAKE_CURRENT_BINARY_DIR}/test)
 ################################################################################
 # Specific part for oai_spgw_u folder
 
@@ -288,7 +287,7 @@ include_directories(${SRC_TOP_DIR}/spgwu)
 include_directories(${SRC_TOP_DIR}/spgwu/simpleswitch)
 include_directories(${SRC_TOP_DIR}/udp)
 include_directories(${SRC_TOP_DIR}/../build/ext/spdlog/include)
-include_directories(${SRC_TOP_DIR}/../../test/integration)
+
 
 add_executable(spgwu
   ${SRC_TOP_DIR}/oai_spgwu/main.cpp

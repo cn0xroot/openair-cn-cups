@@ -71,6 +71,7 @@ install_fb_folly_from_source(){
 
     pushd /tmp
 
+    echo "Debug mode $debug"
     if [ $debug -eq 1 ]; then
       # For advanced debugging options
       $SUDO apt-get install $OPTION \

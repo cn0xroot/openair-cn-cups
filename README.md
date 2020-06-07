@@ -9,10 +9,43 @@
 1. Setup "[Developing inside a Container](https://code.visualstudio.com/docs/remote/container)" in vscode
 1. [Open the repository workspace using vscode in a conteiner](https://code.visualstudio.com/docs/remote/containers#_open-an-existing-workspace-in-a-container) (it will take some time)
 1. Setup conteiner network: ```make docker-setup-network```  
+1. Create and configure spgwu interfaces: ```make docker-config-spgwu-iface```  
 
 ## Environment
 
 See [environment.](https://github.com/navarrothiago/masters/wiki/OpenAirInterface#lte-test-environment)
+
+## Build code using Visual Studio Code
+
+Follow the steps to build spgwu in vscode
+
+1. Run Build Task ```Ctrl + Shift + B```
+1. Select ```Rebuild spgwu```
+
+## Run spgwu
+
+1. Run spgwu ```F5```
+
+### Display all UDP sockets
+
+Run the command ```ss -u -a```
+
+Output:
+
+```
+State                   Recv-Q                    Send-Q                                        Local Address:Port                                        Peer Address:Port                   
+UNCONN                  0                         0                                                127.0.0.11:48062                                            0.0.0.0:*                      
+UNCONN                  0                         0                                             172.55.55.102:40280                                            0.0.0.0:*                      
+UNCONN                  0                         0                                             172.55.55.102:8805                                             0.0.0.0:*                      
+UNCONN                  0                         0                                              192.168.15.2:2152                                             0.0.0.0:* 
+```
+
+The following table maps the socket to the spgwu protocal stack:
+
+app | socket
+--- | --- 
+spgwu-pfcp | 172.55.55.102:8805
+spgwu-gtpv1_u | 192.168.5.2:2151
 
 ### IP Mapping
 
@@ -21,7 +54,6 @@ VM -> Docker
 192.168.15.14 -> 192.168.15.2
 10.50.11.227 -> 172.17.0.2
 ```
-
 ## Other commands
 
 ### Build spgwu docker image

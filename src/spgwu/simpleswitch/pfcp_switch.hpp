@@ -161,6 +161,16 @@ public:
   pfcp::fteid_t generate_fteid_s1u();
   bool create_packet_in_access(std::shared_ptr<pfcp::pfcp_pdr>& pdr, const pfcp::fteid_t& in, uint8_t& cause);
 
+  /**
+   * @brief Process packet flow in UP function.
+   * @details See TS 29.244 version 15.5.0 Release 15, 
+   * Figure 5.2.1-1: Packet processing flow in the UP function.
+   * 
+   * @param iph The ip header.
+   * @param num_bytes The number of bytes TODO: complete.
+   * @param r_endpoint The endpoint socket.
+   * @param tunnel_id The tunnel idenfication.
+   */
   void pfcp_session_look_up_pack_in_access(struct iphdr* const iph, const std::size_t num_bytes, const endpoint& r_endpoint, const uint32_t tunnel_id);
   void pfcp_session_look_up_pack_in_access(struct ipv6hdr* const iph, const std::size_t num_bytes, const endpoint& r_endpoint, const uint32_t tunnel_id);
   void pfcp_session_look_up_pack_in_access(struct iphdr* const iph, const std::size_t num_bytes, const endpoint& r_endpoint) {};

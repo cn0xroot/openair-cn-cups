@@ -79,7 +79,14 @@ namespace pfcp {
       void set(const pfcp::qer_id_t& v) {qer_id.first = true; qer_id.second = v;}
       void set(const pfcp::activate_predefined_rules_t& v) {activate_predefined_rules.first = true; activate_predefined_rules.second = v;}
 
+      /**
+       * @brief Get local session identificator.
+       * 
+       * @param[out] v The local session identificatior 
+       * @return true 
+       */
       bool get(uint64_t& v) const {v = local_seid;return true;}
+
       bool get(pfcp::pdr_id_t& v) const {v = pdr_id;return true;}
       bool get(pfcp::precedence_t& v) const {if (precedence.first) {v = precedence.second;return true;}return false;}
       bool get(pfcp::pdi& v) const {if (pdi.first) {v = pdi.second;return true;}return false;}

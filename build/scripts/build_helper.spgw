@@ -106,46 +106,6 @@ install_spdlog_from_git() {
   return 0
 }
 
-# Using googletest for while
-#-------------------------------------------------------------------------------
-#arg1 is force (0 or 1) (no interactive script)
-#arg2 is debug (0 or 1) (install debug libraries)
-install_googletest_from_git() {
-  if [ $1 -eq 0 ]; then
-    read -p "Do you want to install spdlog ? <y/N> " prompt
-    OPTION=""
-  else
-    prompt='y'
-    OPTION="-y"
-  fi
-  if [ $2 -eq 0 ]; then
-    debug=0
-  else
-    debug=1
-  fi
-
-
-  if [[ $prompt =~ [yY](es)* ]]
-  then
-    GIT_URL=https://github.com/google/googletest.git
-    echo "Install googletest from $GIT_URL"
-    pushd $OPENAIRCN_DIR/build/ext
-    echo "Downloading googletest"
-    if [[ $OPTION =~ -[yY](es)* ]]
-    then
-      $SUDO rm -rf googletest
-    fi
-
-    git clone $GIT_URL
-    cd googletest && git checkout v1.10.x
-    ret=$?;[[ $ret -ne 0 ]] && popd && return $ret
-    popd
-  fi
-  return 0
-}
-
-
-
 #-------------------------------------------------------------------------------
 #arg1 is force (0 or 1) (no interactive script)
 #arg2 is debug (0 or 1) (install debug libraries)
@@ -271,10 +231,6 @@ check_install_spgwc_deps() {
 
   install_spdlog_from_git $1 $2
   ret=$?;[[ $ret -ne 0 ]] && return $ret
-
-  install_googletest_from_git $1 $2
-  ret=$?;[[ $ret -ne 0 ]] && return $ret
-
 
   return 0
 }
@@ -500,9 +456,6 @@ check_install_spgwu_deps() {
   install_spdlog_from_git $1 $2
   ret=$?;[[ $ret -ne 0 ]] && return $ret
 
-  install_googletest_from_git $1 $2
-  ret=$?;[[ $ret -ne 0 ]] && return $ret
-  
   return 0
 }
 #-------------------------------------------------------------------------------

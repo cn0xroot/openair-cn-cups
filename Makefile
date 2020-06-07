@@ -1,6 +1,9 @@
 # imagem para rodar os binários
 IMAGE_NAME=openair-cn-cups
 
+# container name
+CONTAINER_NAME=openair-cn-cups
+
 # tag da imagem
 IMAGE_TAG=latest
 
@@ -33,33 +36,39 @@ define build
 	./build_spgwu -c -V -b Debug -j'
 endef
 
-
-debug: ## Build in Debug mode
+docker-debug: ## Build in Debug mode
 	docker-build
 	$(call build)
 
-
-clean: ## Clean generated artifects
+docker-clean: ## Clean generated artifects
 	docker run -it -v  $(PROJECT_DIR):$(PROJECT_DIR)   \
 	$(IMAGE_CROSS) /bin/bash -c \
 	'cd $(PROJECT_DIR)/build/Debug && make clean && \
 	cd $(PROJECT_DIR)/build/Release && make clean'
 
-shell-run: ## Login in docker bash mode
+docker-bash: ## Run container in bash mode
 	docker run -it --workdir $(WORK_CONTAINER_DIR) -v $(PROJECT_DIR):$(PROJECT_DIR)   \
-	$(IMAGE_NAME) /bin/bash
+	$(IMAGE_NAME) --name=$(CONTAINER_NAME) /bin/bash
     
+docker-login: ## Login in openair-cn-cups container
+	docker exec -it openair-cn-cups  /bin/bash -c 'cd /workspaces/openair-cn-cups && /bin/bash'
+
 docker-create-network: ## Create macvlan with subnet 192.168.15.0 using enp0s20f0u1 interface
 	docker network create -d macvlan --subnet=192.168.15.0/24 --gateway=192.168.15.1 -o parent=enp0s20f0u1 macvlan-enp0s20f0u1
 
-docker-connect-network: ## Connect maclan on container openair-cn-cups
+docker-setup-network: ## Connect maclan on container openair-cn-cup and create spgwu interfaces
 	docker network connect macvlan-enp0s20f0u1 openair-cn-cups
+	docker-config-spgwu-iface
 
-docker-run: ## Login in docker bash mode
+docker-config-spgwu-iface: ## Create and configure spgwu interefaces 
+	$(PROJECT_DIR)/configs/config-spgwu-interface.sh 
+
+docker-run-spwgu: ## Run container and run spgwu
 	docker run -it --workdir $(WORK_CONTAINER_DIR) -v $(PROJECT_DIR):$(PROJECT_DIR)   \
-	$(IMAGE_NAME) /bin/bash -c './build/spgw_u/build/spgwu -c ./etc/spgw_u-dev.conf'
+	$(IMAGE_NAME) /bin/bash -c '$(PROJECT_DIR)/build/spgw_u/build/spgwu -c ./etc/spgw_u-dev.conf'
  
 docker-build: ## Build docker image
 	docker build --build-arg UID=$$(id -u) --build-arg GID=$$(id -g) -t $(IMAGE_NAME) docker/.
 
-    
+run-spgwu: ## Run spgwu 
+	$(PROJECT_DIR)/build/spgw_u/build/spgwu -c ./etc/spgw_u-dev.conf -o

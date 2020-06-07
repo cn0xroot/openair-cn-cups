@@ -45,7 +45,7 @@ function help()
   echo_error "Options:"
   echo_error "Mandatory arguments to long options are mandatory for short options too."
   echo_error "  -b, --build-type                          Build type as defined in cmake, allowed values are: Debug Release RelWithDebInfo MinSizeRel"
-  echo_error "  -c, --clean                               Clean the build generated files: config, object, executable files (build from scratch)"
+  echo_error "  -/c, --clean                               Clean the build generated files: config, object, executable files (build from scratch)"
   echo_error "  -f, --force                               No interactive script for installation of software packages."
   echo_error "  -h, --help                                Print this help."
   echo_error "  -I, --install-deps                        Check installed software necessary to build and run S/P-GW-U (support $SUPPORTED_DISTRO)."
@@ -72,11 +72,13 @@ function main()
     do
     case "$1" in
       -b | --build-type)
+        echo "Build Type $2"
         list_include_item "Debug Release RelWithDebInfo MinSizeRel" $2
+        echo "$?"
         [[ $? -ne 0 ]] && echo_error "Build type $2 not recognized" && return $?
         cmake_args="$cmake_args -DCMAKE_BUILD_TYPE=$2"
         list_include_item "Debug" $2
-        [[ $? -ne 0 ]] && debug=1
+        debug=1
         shift 2;
         ;;
       -c | --clean)
@@ -194,6 +196,12 @@ function main()
   ret=$?;[[ $ret -ne 0 ]] && return $ret
 
   compilations spgw_u spgwu $OPENAIRCN_DIR/build/spgw_u/build/spgwu $verbose
+  ret=$?;[[ $ret -ne 0 ]] && return $ret
+
+  # make spgwu-test target
+  # TODO navarrothiago: Change path. Create a way avoiding explicit the path 
+  # here and CMAKE (see add_subdirectory in CMakeLists.txt oai_spwgu)
+  compilations spgw_u spgwu-test $OPENAIRCN_DIR/build/spgw_u/build/test/spgwu-test $verbose
   ret=$?;[[ $ret -ne 0 ]] && return $ret
 
   # For daemon should not be group writable

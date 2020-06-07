@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch",
+            "name": "Run spgwu",
             "type": "cppdbg",
             "request": "launch",
             "program": "/usr/local/bin/spgwu",
@@ -32,6 +32,28 @@
             ],
             "preLaunchTask": "Rebuild spgwu",
             "postDebugTask": "Kill all spwgu process"
-        }
+        },
+        {
+            "name": "Run spgwu-test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/spgw_u/build/test/spgwu-test",
+            "args": [
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            // "preLaunchTask": "Rebuild spgwu",
+            // "postDebugTask": "Kill all spwgu process"
+        },
     ]
 }

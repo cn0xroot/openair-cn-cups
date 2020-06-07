@@ -40,6 +40,9 @@ RUN apt-get update && \
 RUN apt-get update && \
       apt-get -y install iputils-ping
 
+RUN apt-get update && \
+      apt-get -y install wget
+
 RUN apt-get update \
       # Install Docker CE CLI
       # The idea is to run docker network connect inside the container
