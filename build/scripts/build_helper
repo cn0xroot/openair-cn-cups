@@ -190,18 +190,19 @@ function list_include_item {
 # arg 2 Executable target name
 # arg 3 Executable name (no path)
 # arg 4 Verbose         (1 or 0)
+# arg 5 Clean           (1 or 0)
 compilations() {
   echo_info "Compilation log for $3 is here: $dlog/$2.txt"
   cd $OPENAIRCN_DIR/build/$1/build
   if [ "a$4" == "a1" ]; then
     set -o pipefail
     {
-      rm -f $3
+      if [ "$5" == "1"]; then  rm -f $3; fi
       make $make_args $2
     } | tee $dlog/$2.txt
   else
     {
-      rm -f $3
+      if [ "$5" == "1"]; then  rm -f $3; fi
       make $make_args $2
     } > $dlog/$2.txt 2>&1
   fi

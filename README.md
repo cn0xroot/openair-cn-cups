@@ -5,8 +5,9 @@
 1. Download vscode available [here](https://code.visualstudio.com/download)
 1. Clone the repository openair-cn-cups
 1. Open the console in your workspace
-1. Create a macvlan docker network  running ```make docker-create-network```. It is assumed that you have two network device, one of them is the enp0s20f0u1 (See [Makefile](Makefile)).
-1. Setup "[Developing inside a Container](https://code.visualstudio.com/docs/remote/container)" in vscode
+1. Create a macvlan docker network  running ```make docker-create-network```.\
+It is assumed that you have two network device, one of them is the enp0s20f0u1 (See [Makefile](Makefile)).
+1. Setup [Developing inside a Container](https://code.visualstudio.com/docs/remote/container) in vscode
 1. [Open the repository workspace using vscode in a conteiner](https://code.visualstudio.com/docs/remote/containers#_open-an-existing-workspace-in-a-container) (it will take some time)
 1. Setup conteiner network: ```make docker-setup-network```  
 1. Create and configure spgwu interfaces: ```make docker-config-spgwu-iface```  

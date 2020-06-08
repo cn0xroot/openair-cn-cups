@@ -195,13 +195,13 @@ function main()
   $CMAKE $cmake_args .. > /dev/null
   ret=$?;[[ $ret -ne 0 ]] && return $ret
 
-  compilations spgw_u spgwu $OPENAIRCN_DIR/build/spgw_u/build/spgwu $verbose
+  compilations spgw_u spgwu $OPENAIRCN_DIR/build/spgw_u/build/spgwu $verbose $clean
   ret=$?;[[ $ret -ne 0 ]] && return $ret
 
   # make spgwu-test target
   # TODO navarrothiago: Change path. Create a way avoiding explicit the path 
   # here and CMAKE (see add_subdirectory in CMakeLists.txt oai_spwgu)
-  compilations spgw_u spgwu-test $OPENAIRCN_DIR/build/spgw_u/build/test/spgwu-test $verbose
+  compilations spgw_u spgwu-test $OPENAIRCN_DIR/build/spgw_u/build/test/spgwu-test $verbose $clean
   ret=$?;[[ $ret -ne 0 ]] && return $ret
 
   # For daemon should not be group writable
