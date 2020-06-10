@@ -11,6 +11,8 @@ RUN apt-get update && \
       apt-get -y install sudo git
 
 # TODO: Instead of clone, we should download only de dependencies.
+# TODO: Remove repository in the end.
+# TODO: Check if this really needed. vscode mount this on container.
 RUN git clone --depth=1 --branch=$GIT_TAG https://github.com/OPENAIRINTERFACE/openair-cn-cups.git
 
 RUN git clone --depth=1 --branch=master https://github.com/gabime/spdlog.git openair-cn-cups/build/ext/spdlog
@@ -42,6 +44,16 @@ RUN apt-get update && \
 
 RUN apt-get update && \
       apt-get -y install wget
+
+# googletest framework
+RUN  wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz && \
+      tar zxf release-1.8.0.tar.gz && \
+      rm -f release-1.8.0.tar.gz && \
+      cd googletest-release-1.8.0 && \
+      cmake . && \
+      make && \
+      make install && \
+      cd ..
 
 RUN apt-get update \
       # Install Docker CE CLI

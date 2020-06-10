@@ -20,8 +20,9 @@ See [environment.](https://github.com/navarrothiago/masters/wiki/OpenAirInterfac
 
 Follow the steps to build spgwu in vscode
 
-1. Run Build Task ```Ctrl + Shift + B```
+1. Run again Build Task ```Ctrl + Shift + B```
 1. Select ```Rebuild spgwu```
+1. Check sucess message: **spgwu-test compiled** and **spgwu installed**
 
 ## Run spgwu
 
@@ -46,7 +47,7 @@ The following table maps the socket to the spgwu protocal stack:
 app | socket
 --- | --- 
 spgwu-pfcp | 172.55.55.102:8805
-spgwu-gtpv1_u | 192.168.5.2:2151
+spgwu-gtpv1_u | 192.168.5.2:2152
 
 ### IP Mapping
 
