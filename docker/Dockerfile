@@ -45,7 +45,16 @@ RUN apt-get update && \
 RUN apt-get update && \
       apt-get -y install wget
 
-# googletest framework
+# https://pcapplusplus.github.io/docs/install/build-source/linux#installation
+RUN apt-get update && \
+      apt-get -y install libpcap-dev && \
+      git clone --depth=1 --branch=v19.12 https://github.com/seladb/PcapPlusPlus.git && \
+      cd PcapPlusPlus && \
+      ./configure-linux.sh --default && \
+      make && \
+      make install
+
+# googletest v1.8.0 
 RUN  wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz && \
       tar zxf release-1.8.0.tar.gz && \
       rm -f release-1.8.0.tar.gz && \

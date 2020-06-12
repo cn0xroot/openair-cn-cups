@@ -1,4 +1,13 @@
 #include "gtest/gtest.h"
+#include "gtpv1u.hpp"
+#include "gtpu.h"
+#include "gtpu_l4_stack_test.hpp"
+
+// Pcapplusplus
+#include <EthLayer.h>
+#include <IPv4Layer.h>
+#include <Packet.h>
+#include <RawPacket.h>
 
 // [BGN] main
 #include "async_shell_cmd.hpp"
@@ -128,7 +137,56 @@ public:
   }
 };
 
-TEST_F(SpgwuTests, send_GTPU_G_PDU)
+// Inject G_PDU to spgwu_s1u stack using gtpu_l4_stack client.
+// Create GTP packet - https://pcapplusplus.github.io/docs/tutorials/packet-crafting#packet-creation
+// Send GTP packet to network device - https://pcapplusplus.github.io/docs/tutorials/capture-packets#sending-packets
+TEST_F(SpgwuTests, send_GTPU_G_PDU_received_GTPU_ERROR_INDICATION)
 {
+   u_int32_t clientPort = 8000;
+  gtpu_l4_stack_test gptu_client(spgwu_cfg.s1_up.addr4, clientPort, spgwu_cfg.s1_up.thread_rd_sched_params);
+
+  struct sockaddr_in serverAddr;
+  memset(&serverAddr, 0, sizeof(serverAddr));
+  serverAddr.sin_family = AF_INET;
+  serverAddr.sin_port = htons(2152);
+  serverAddr.sin_addr.s_addr = INADDR_ANY;
+
+  // create a new IPv4 layer.
+  pcpp::IPv4Layer newIPLayer(pcpp::IPv4Address(std::string("192.168.15.1")), pcpp::IPv4Address(std::string("10.0.0.1")));
+  newIPLayer.getIPv4Header()->ipId = htons(2000);
+  newIPLayer.getIPv4Header()->timeToLive = 64;
+
+  // create a packet with initial capacity of 100 bytes (will grow automatically if needed)
+  pcpp::Packet newPacket(100);
+
+  // add all the layers we created
+  newPacket.addLayer(&newIPLayer);
+
+  // compute all calculated fields
+  newPacket.computeCalculateFields();
+
+  // G-PDU GTP - T-PDU + Header GTP - where T-PDU correspond to an IP datagram and is the payload tunneled in 
+  //the user GTP tunnel associated  with  the concerned  PDP context. 
+
+  // header.
+  struct gtpuhdr header;
+  memset(&header, 0, sizeof(header));
+
+  // T-PDU (IP datagram).
+  u_int32_t payloadLength = newPacket.getRawPacket()->getRawDataLen();
+  std::vector<char> gtpuPacket(sizeof(header), 0);
+  gtpuPacket.insert(gtpuPacket.end(), newPacket.getRawPacket()->getRawData(), newPacket.getRawPacket()->getRawData() + payloadLength);
+  
+  // save payload size in header field.
+  header.message_length = gtpuPacket.size();
+
+  // Message expected to be received.
+  gptu_client.message_type_expected(GTPU_ERROR_INDICATION);
+
+  // send data.
   std::cout << "send_GTPU_G_PDU" << std::endl;
+  gptu_client.send_g_pdu(serverAddr, static_cast<teid_t>(0), gtpuPacket.data() + sizeof(header), payloadLength);
+
+  // pause, cin.get is portable
+  std::cin.get();
 }

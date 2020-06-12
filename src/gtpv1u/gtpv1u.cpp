@@ -146,7 +146,9 @@ void gtpu_l4_stack::handle_receive_message_cb(const gtpv1u_msg& msg, const struc
 //------------------------------------------------------------------------------
 void gtpu_l4_stack::send_g_pdu(const struct sockaddr_in& peer_addr, const teid_t teid, const char* payload, const ssize_t payload_len)
 {
+  // TODO (navarrothiago) Undestand why gtpuhdr is used.
   struct gtpuhdr *gtpuhdr = reinterpret_cast<struct gtpuhdr *>(reinterpret_cast<uintptr_t>(payload) - (uintptr_t)sizeof(struct gtpuhdr));
+  //FIXME: heap-buffer-overflow on address, gtpuhdr should be constructed here.
   gtpuhdr->spare = 0;
   gtpuhdr->e = 0;
   gtpuhdr->s = 0;

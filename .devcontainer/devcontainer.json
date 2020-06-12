@@ -18,7 +18,8 @@
 		"ms-vscode.cmake-tools",
 		"ms-vscode.cpptools",
 		"twxs.cmake",
-		"cschlosser.doxdocgen"
+    "cschlosser.doxdocgen",
+    "amiralizadeh9480.cpp-helper"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
