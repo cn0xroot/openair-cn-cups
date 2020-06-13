@@ -9,70 +9,63 @@
 #include <Packet.h>
 #include <RawPacket.h>
 
-// [BGN] main
-#include "async_shell_cmd.hpp"
-#include "common_defs.h"
-#include "itti.hpp"
-#include "logger.hpp"
-#include "options.hpp"
-#include "pfcp_switch.hpp"
-#include "pid_file.hpp"
-#include "spgwu_app.hpp"
-#include "spgwu_config.hpp"
-
-#include <boost/asio.hpp>
-#include <iostream>
-#include <thread>
-#include <signal.h>
-#include <stdint.h>
-#include <unistd.h> // get_pid(), pause()
-#include <vector>
-
-using namespace spgwu;
-using namespace util;
-using namespace std;
-
-itti_mw *itti_inst = nullptr;
-async_shell_cmd *async_shell_cmd_inst = nullptr;
-pfcp_switch *pfcp_switch_inst = nullptr;
-spgwu_app *spgwu_app_inst = nullptr;
-spgwu_config spgwu_cfg;
-boost::asio::io_service io_service;
-
-void my_app_signal_handler(int s)
-{
-  std::cout << "Caught signal " << s << std::endl;
-  Logger::system().startup("exiting");
-  itti_inst->send_terminate_msg(TASK_SPGWU_APP);
-  itti_inst->wait_tasks_end();
-  std::cout << "Freeing Allocated memory..." << std::endl;
-  if (async_shell_cmd_inst)
-    delete async_shell_cmd_inst;
-  async_shell_cmd_inst = nullptr;
-  std::cout << "Async Shell CMD memory done." << std::endl;
-  if (itti_inst)
-    delete itti_inst;
-  itti_inst = nullptr;
-  std::cout << "ITTI memory done." << std::endl;
-  if (spgwu_app_inst)
-    delete spgwu_app_inst;
-  spgwu_app_inst = nullptr;
-  std::cout << "SPGW-U APP memory done." << std::endl;
-  std::cout << "Freeing Allocated memory done" << std::endl;
-  exit(0);
-}
-
-// [END] main
+// includes for spgwu components
+#include "spgwu_tests_utils.hpp"
 
 class SpgwuTests : public ::testing::Test
 {
 public:
+  /**
+   * @brief Construct a new Spgwu Tests object.
+   * @details Initializa spgwu_app which has a gtpu server for incoming messages. 
+   */
   SpgwuTests()
+      : m_clientPort(8000),
+        m_newPacket(100)
+
   {
-    // initialization code here
+    init_spgwu_app();
+    mp_gptu_client = std::make_shared<gtpu_l4_stack_test>(spgwu_cfg.s1_up.addr4, m_clientPort, spgwu_cfg.s1_up.thread_rd_sched_params);
   }
 
   void SetUp()
+  {
+    memset(&m_serverAddr, 0, sizeof(m_serverAddr));
+    m_serverAddr.sin_family = AF_INET;
+    m_serverAddr.sin_port = htons(2152);
+    m_serverAddr.sin_addr.s_addr = INADDR_ANY;
+
+    // create a new IPv4 layer.
+    m_newIPLayer = pcpp::IPv4Layer(pcpp::IPv4Address(std::string("192.168.15.1")), pcpp::IPv4Address(std::string("10.0.0.1")));
+    m_newIPLayer.getIPv4Header()->ipId = htons(2000);
+    m_newIPLayer.getIPv4Header()->timeToLive = 64;
+
+    // add all the layers we created
+    m_newPacket.addLayer(&m_newIPLayer);
+
+    // compute all calculated fields
+    m_newPacket.computeCalculateFields();
+
+    // G-PDU GTP - T-PDU + Header GTP - where T-PDU correspond to an IP datagram and is the payload tunneled in
+    //the user GTP tunnel associated  with  the concerned  PDP context.
+    memset(&m_header, 0, sizeof(m_header));
+
+    // T-PDU (IP datagram).
+    m_payloadLength = m_newPacket.getRawPacket()->getRawDataLen();
+    // allocate header size in packet.
+    m_gtpuPacket = std::vector<char>(sizeof(m_header), 0);
+    // copy payload.
+    m_gtpuPacket.insert(m_gtpuPacket.end(), m_newPacket.getRawPacket()->getRawData(), m_newPacket.getRawPacket()->getRawData() + m_payloadLength);
+
+    // save payload size in m_header field.
+    m_header.message_length = m_gtpuPacket.size();
+  }
+
+  void TearDown()
+  {
+  }
+
+  void init_spgwu_app()
   {
     // char *argv[] = {"program-name", "arg1", "arg2", ..., "argn", NULL}
     char *argv[] = {"spwgu-test", "-c", "/workspaces/openair-cn-cups/etc/spgw_u-dev.conf", "-o", NULL};
@@ -127,65 +120,37 @@ public:
 
     // once all udp servers initialized
     io_service.run();
-
-    // pause();
-    // return 0;
   }
 
-  void TearDown()
-  {
-  }
+  // gtpu client.
+  std::shared_ptr<gtpu_l4_stack_test> mp_gptu_client;
+  // server address.
+  struct sockaddr_in m_serverAddr;
+  // server port.
+  u_int32_t m_clientPort;
+  // IP PDU
+  pcpp::IPv4Layer m_newIPLayer;
+  // create a packet with initial capacity of 100 bytes (will grow automatically if needed)
+  pcpp::Packet m_newPacket;
+  // T-PDU (IP datagram).
+  u_int32_t m_payloadLength;
+  std::vector<char> m_gtpuPacket;
+  // m_header.
+  struct gtpuhdr m_header;
 };
 
 // Inject G_PDU to spgwu_s1u stack using gtpu_l4_stack client.
 // Create GTP packet - https://pcapplusplus.github.io/docs/tutorials/packet-crafting#packet-creation
 // Send GTP packet to network device - https://pcapplusplus.github.io/docs/tutorials/capture-packets#sending-packets
+// Receive GTPU_ERROR_INDICATION
 TEST_F(SpgwuTests, send_GTPU_G_PDU_received_GTPU_ERROR_INDICATION)
 {
-   u_int32_t clientPort = 8000;
-  gtpu_l4_stack_test gptu_client(spgwu_cfg.s1_up.addr4, clientPort, spgwu_cfg.s1_up.thread_rd_sched_params);
-
-  struct sockaddr_in serverAddr;
-  memset(&serverAddr, 0, sizeof(serverAddr));
-  serverAddr.sin_family = AF_INET;
-  serverAddr.sin_port = htons(2152);
-  serverAddr.sin_addr.s_addr = INADDR_ANY;
-
-  // create a new IPv4 layer.
-  pcpp::IPv4Layer newIPLayer(pcpp::IPv4Address(std::string("192.168.15.1")), pcpp::IPv4Address(std::string("10.0.0.1")));
-  newIPLayer.getIPv4Header()->ipId = htons(2000);
-  newIPLayer.getIPv4Header()->timeToLive = 64;
-
-  // create a packet with initial capacity of 100 bytes (will grow automatically if needed)
-  pcpp::Packet newPacket(100);
-
-  // add all the layers we created
-  newPacket.addLayer(&newIPLayer);
-
-  // compute all calculated fields
-  newPacket.computeCalculateFields();
-
-  // G-PDU GTP - T-PDU + Header GTP - where T-PDU correspond to an IP datagram and is the payload tunneled in 
-  //the user GTP tunnel associated  with  the concerned  PDP context. 
-
-  // header.
-  struct gtpuhdr header;
-  memset(&header, 0, sizeof(header));
-
-  // T-PDU (IP datagram).
-  u_int32_t payloadLength = newPacket.getRawPacket()->getRawDataLen();
-  std::vector<char> gtpuPacket(sizeof(header), 0);
-  gtpuPacket.insert(gtpuPacket.end(), newPacket.getRawPacket()->getRawData(), newPacket.getRawPacket()->getRawData() + payloadLength);
-  
-  // save payload size in header field.
-  header.message_length = gtpuPacket.size();
-
   // Message expected to be received.
-  gptu_client.message_type_expected(GTPU_ERROR_INDICATION);
+  mp_gptu_client->message_type_expected(GTPU_ERROR_INDICATION);
 
   // send data.
-  std::cout << "send_GTPU_G_PDU" << std::endl;
-  gptu_client.send_g_pdu(serverAddr, static_cast<teid_t>(0), gtpuPacket.data() + sizeof(header), payloadLength);
+  Logger::gtpv1_u().debug("send_GTPU_G_PDU");
+  mp_gptu_client->send_g_pdu(m_serverAddr, static_cast<teid_t>(0), m_gtpuPacket.data() + sizeof(m_header), m_payloadLength);
 
   // pause, cin.get is portable
   std::cin.get();

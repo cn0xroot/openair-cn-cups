@@ -124,6 +124,8 @@ void spgwu_s1u::handle_receive(char* recv_buffer, const std::size_t bytes_transf
 
       struct iphdr* iph = (struct iphdr*)&recv_buffer[gtp_payload_offset];
       if (iph->version == 4) {
+      // Section 8.2.24 TS 29 244
+      // The "Access" and "Core" values denote a downlink and uplink traffic direction respectively.
         pfcp_switch_inst->pfcp_session_look_up_pack_in_access(iph, gtp_payload_length, r_endpoint, tunnel_id);
       } else if (iph->version == 6) {
         pfcp_switch_inst->pfcp_session_look_up_pack_in_access((struct ipv6hdr*)iph, gtp_payload_length, r_endpoint, tunnel_id);
@@ -146,6 +148,8 @@ void spgwu_s1u::handle_receive(char* recv_buffer, const std::size_t bytes_transf
   } else {
     struct iphdr* iph = (struct iphdr*)&recv_buffer[0];
     if (iph->version == 4) {
+      // Section 8.2.24 TS 29 244
+      // The "Access" and "Core" values denote a downlink and uplink traffic direction respectively.
       pfcp_switch_inst->pfcp_session_look_up_pack_in_access(iph, bytes_transferred, r_endpoint);
     } else if (iph->version == 6) {
       pfcp_switch_inst->pfcp_session_look_up_pack_in_access((struct ipv6hdr*)iph, bytes_transferred, r_endpoint);

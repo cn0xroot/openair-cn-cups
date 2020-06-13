@@ -113,6 +113,11 @@ private:
   //moodycamel::ConcurrentQueue<pfcp::pfcp_session*>            create_session_q;
 
   
+  /**
+   * @brief Loop for reading pdn packets
+   * 
+   * @param sched_params Parametros da thread.
+   */
   void pdn_read_loop(const util::thread_sched_params& sched_params);
   int create_pdn_socket (const char * const ifname, const bool promisc, int& if_index);
   int create_pdn_socket (const char * const ifname);
@@ -162,8 +167,8 @@ public:
   bool create_packet_in_access(std::shared_ptr<pfcp::pfcp_pdr>& pdr, const pfcp::fteid_t& in, uint8_t& cause);
 
   /**
-   * @brief Process packet flow in UP function.
-   * @details See TS 29.244 version 15.5.0 Release 15, 
+   * @brief Process packet flow in UP function - UE to PDN (uplink).
+   * @details See TS 29.244 version 15.5.0 Release 15.
    * Figure 5.2.1-1: Packet processing flow in the UP function.
    * 
    * @param iph The ip header.
@@ -177,6 +182,12 @@ public:
   void pfcp_session_look_up_pack_in_access(struct ipv6hdr* const iph, const std::size_t num_bytes, const endpoint& r_endpoint) {};
   //void pfcp_session_look_up(struct ethhdr* const ethh, const std::size_t num_bytes);
 
+  /**
+   * @brief Packet from PDN to UE (downlink)
+   * 
+   * @param buffer 
+   * @param num_bytes 
+   */
   void pfcp_session_look_up_pack_in_core(const char *buffer, const std::size_t num_bytes);
 
   void send_to_core(char* const ip_packet, const ssize_t len);
