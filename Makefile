@@ -58,7 +58,6 @@ docker-create-network: ## Create macvlan with subnet 192.168.15.0 using enp0s20f
 
 docker-setup-network: ## Connect maclan on container openair-cn-cup and create spgwu interfaces
 	docker network connect macvlan-enp0s20f0u1 openair-cn-cups
-	docker-config-spgwu-iface
 
 docker-config-spgwu-iface: ## Create and configure spgwu interefaces 
 	$(PROJECT_DIR)/configs/config-spgwu-interface.sh 
@@ -72,3 +71,6 @@ docker-build: ## Build docker image
 
 run-spgwu: ## Run spgwu 
 	$(PROJECT_DIR)/build/spgw_u/build/spgwu -c ./etc/spgw_u-dev.conf -o
+
+kill-spgwu: ## Kill spgwu
+	echo "TODO" 

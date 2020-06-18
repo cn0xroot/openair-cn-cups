@@ -109,6 +109,9 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhisto
       && chown -R $UNAME /commandhistory \
       && echo $SNIPPET >> "/home/$UNAME/.bashrc" 
  
+RUN apt-get update && \
+      apt-get -y install tcpdump
+      
 USER root
 #USER $UNAME
 

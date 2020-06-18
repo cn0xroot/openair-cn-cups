@@ -147,6 +147,7 @@ void pfcp_switch::send_to_core(char* const ip_packet, const ssize_t len)
   //Logger::pfcp_switch().info( "pfcp_switch::send_to_core %d bytes ", len);
   struct sockaddr_in dst; // no clear
   dst.sin_addr.s_addr = ((struct iphdr*)ip_packet)->daddr;
+  Logger::pfcp_switch().info("destination %s", inet_ntoa(dst.sin_addr));
   dst.sin_family = AF_INET;
   if((bytes_sent = sendto(sock_w, ip_packet, len, 0, (struct sockaddr *)&dst, sizeof(dst))) < 0) {
     Logger::pfcp_switch().error( "sendto failed rc=%d:%s", bytes_sent, strerror (errno));

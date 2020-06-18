@@ -47,6 +47,8 @@ namespace pfcp {
 
 
     public:
+      // This IE shall contain the unique identifier allocated by the CP
+      // function identifying the session. 
       pfcp::fseid_t      cp_fseid;
       uint64_t                 seid; // User plane
 
