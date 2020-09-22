@@ -11,6 +11,8 @@ It is assumed that you have two network device, one of them is the enp0s20f0u1 (
 1. [Open the repository workspace using vscode in a conteiner](https://code.visualstudio.com/docs/remote/containers#_open-an-existing-workspace-in-a-container) (it will take some time)
 1. Setup conteiner network: ```make docker-setup-network```  
 1. Create and configure spgwu interfaces: ```make docker-config-spgwu-iface```  
+1. Clone upf-bpf in `build/ext`: `git clone git@github.com:navarrothiago/upf-bpf.git build/ext`
+1. Setup upf-bpf environment (install dependencies and creates veth pairs): `make setup`
 1. Run spwgu standalone: `make run-spgwu`
 
 ## Environment
