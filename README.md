@@ -11,6 +11,7 @@ It is assumed that you have two network device, one of them is the enp0s20f0u1 (
 1. [Open the repository workspace using vscode in a conteiner](https://code.visualstudio.com/docs/remote/containers#_open-an-existing-workspace-in-a-container) (it will take some time)
 1. Setup conteiner network: ```make docker-setup-network```  
 1. Create and configure spgwu interfaces: ```make docker-config-spgwu-iface```  
+1. Run spwgu standalone: `make run-spgwu`
 
 ## Environment
 
@@ -24,7 +25,7 @@ Follow the steps to build spgwu in vscode
 1. Select ```Rebuild spgwu```
 1. Check sucess message: **spgwu-test compiled** and **spgwu installed**
 
-## Run spgwu
+## Run UTs for spgwu
 
 1. Run spgwu ```F5```
 

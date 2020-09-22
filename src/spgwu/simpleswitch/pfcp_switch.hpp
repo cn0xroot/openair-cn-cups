@@ -45,6 +45,8 @@
 #include <thread>
 #include <vector>
 
+class RulesUtilitiesImpl;
+
 namespace spgwu {
 
   // Have to be tuned for sdt situations
@@ -157,6 +159,7 @@ private:
   teid_t generate_teid_s1u() {return teid_s1u_generator_.get_uid();};
 
 public:
+  std::shared_ptr<RulesUtilitiesImpl> mpRulesImpl;
   pfcp_switch();
   pfcp_switch(pfcp_switch const&)    = delete;
   void operator=(pfcp_switch const&)     = delete;

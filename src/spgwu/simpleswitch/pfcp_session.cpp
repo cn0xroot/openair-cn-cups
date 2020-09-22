@@ -28,6 +28,8 @@
 #include "pfcp_session.hpp"
 #include "pfcp_switch.hpp"
 #include "logger.hpp"
+#include "../interfaces/ForwardingActionRulesImpl.h"
+#include "../interfaces/PacketDetectionRulesImpl.h"
 
 using namespace pfcp;
 
@@ -60,12 +62,14 @@ void pfcp_session::add(std::shared_ptr<pfcp::pfcp_far> far)
 {
   Logger::spgwu_sx().info( "pfcp_session::add(far) seid " SEID_FMT " ", seid);
   fars.push_back(far);
+  UPFProgramManager::getInstance().getSessionManager()->addFAR(seid, std::make_shared<ForwardingActionRulesImpl>(*far));
 }
 //------------------------------------------------------------------------------
 void pfcp_session::add(std::shared_ptr<pfcp::pfcp_pdr> pdr)
 {
   Logger::spgwu_sx().info( "pfcp_session::add(pdr) seid " SEID_FMT " ", seid);
   pdrs.push_back(pdr);
+  UPFProgramManager::getInstance().getSessionManager()->addPDR(seid, std::make_shared<PacketDetectionRulesImpl>(*pdr));
 }
 //------------------------------------------------------------------------------
 bool pfcp_session::remove(const pfcp::far_id_t& far_id, uint8_t& cause_value)

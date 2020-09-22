@@ -30,13 +30,25 @@ include_directories(${SRC_TOP_DIR}/spgwu)
 include_directories(${SRC_TOP_DIR}/spgwu/simpleswitch)
 include_directories(${SRC_TOP_DIR}/udp)
 include_directories(${SRC_TOP_DIR}/../build/ext/spdlog/include)
+include_directories(${SRC_TOP_DIR}/../build/ext/upf-bpf/include)
+include_directories(${SRC_TOP_DIR}/../build/ext/upf-bpf/src)
+include_directories(${SRC_TOP_DIR}/../build/ext/upf-bpf/src/bpf)
+include_directories(${SRC_TOP_DIR}/../build/ext/upf-bpf/src/skel)
 
+find_package(UpfBpf CONFIG REQUIRED)
 
 add_library (SPGWU STATIC
   spgwu_pfcp_association.cpp
   spgwu_app.cpp
   spgwu_config.cpp
   spgwu_sx.cpp
+  interfaces/ForwardingActionRulesImpl.cpp
+  interfaces/PacketDetectionRulesImpl.cpp
+  interfaces/RulesUtilitiesImpl.cpp
+  interfaces/SessionBpfImpl.cpp
   )
 
+  target_link_libraries(SPGWU UpfBpf::upf_xdp)
+
+  # add_dependencies(SPGWU upf-bpf)
   

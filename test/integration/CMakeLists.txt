@@ -29,6 +29,10 @@ include_directories(${SRC_TOP_DIR}/spgwu)
 include_directories(${SRC_TOP_DIR}/spgwu/simpleswitch)
 include_directories(${SRC_TOP_DIR}/udp)
 include_directories(${SRC_TOP_DIR}/../build/ext/spdlog/include)
+include_directories(${SRC_TOP_DIR}/../build/ext/upf-bpf/src)
+include_directories(${SRC_TOP_DIR}/../build/ext/upf-bpf/src/bpf)
+include_directories(${SRC_TOP_DIR}/../build/ext/upf-bpf/include)
+include_directories(${SRC_TOP_DIR}/../build/ext/upf-bpf/src/skel)
 
 set(SRC_TEST 
     gtpu_l4_stack_test.cpp
@@ -40,8 +44,13 @@ set(SRC_TEST
 )
 
 
+# Workaround - check https://github.com/navarrothiago/upf-bpf/issues/23
+add_definitions(-DPCAP_DONT_INCLUDE_PCAP_BPF_H)
+
 add_executable(spgwu-test ${SRC_TEST})
-target_link_libraries (spgwu-test ${ASAN}  -Wl,--start-group CN_UTILS SPGWU SPGW_SWITCH UDP GTPV1U PFCP 3GPP_COMMON_TYPES gflags glog dl double-conversion folly -Wl,--end-group
-m rt config++ event boost_system ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}   /usr/local/lib/libPacket++.a /usr/local/lib/libPcap++.a /usr/local/lib/libCommon++.a pcap)
+target_link_libraries (spgwu-test ${ASAN} -Wl,--start-group CN_UTILS SPGWU SPGW_SWITCH UDP GTPV1U PFCP 3GPP_COMMON_TYPES gflags glog dl double-conversion folly -Wl,--end-group
+pthread m rt config++ event boost_system ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}   /usr/local/lib/libPacket++.a /usr/local/lib/libPcap++.a /usr/local/lib/libCommon++.a pcap
+UpfBpf::upf_xdp
+)
 
 # add_test(NAME ${BINARY} COMMAND ${BINARY})

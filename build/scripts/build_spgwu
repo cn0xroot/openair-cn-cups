@@ -192,7 +192,10 @@ function main()
   fi
 
   cd ./build
-  $CMAKE $cmake_args .. > /dev/null
+  echo "00000000000000000000" 
+  ls ${THIS_SCRIPT_PATH}/../ext/upf-bpf/package/lib/cmake/UpfBpf/
+  echo "00000000000000000000" 
+  $CMAKE $cmake_args .. -DUpfBpf_DIR="${THIS_SCRIPT_PATH}/../ext/upf-bpf/package/lib/cmake/UpfBpf/" > /dev/null
   ret=$?;[[ $ret -ne 0 ]] && return $ret
 
   compilations spgw_u spgwu $OPENAIRCN_DIR/build/spgw_u/build/spgwu $verbose $clean

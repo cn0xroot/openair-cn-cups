@@ -111,7 +111,19 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhisto
  
 RUN apt-get update && \
       apt-get -y install tcpdump
-      
+
+RUN apt-get update && \
+      apt-get -y install libelf-dev zlib1g clang llvm
+
+RUN apt-get update && \
+      apt-get -y install linux-tools-common linux-headers-generic
+    
+RUN apt-get update && \
+      apt-get -y install g++-multilib libc6-dev-i386
+
+RUN apt-get update && \
+      apt-get -y install ethtool
+
 USER root
 #USER $UNAME
 

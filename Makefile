@@ -18,6 +18,10 @@ TEST_DIR=$(PROJECT_DIR)/build/Debug
 
 NUM_THREADS=8
 
+# Interface to be configured with veth pair.
+DEVICE_IN=eth0
+DEVICE_OUT=veth0
+
 .PHONY: help
 
 help:
@@ -54,10 +58,10 @@ docker-login: ## Login in openair-cn-cups container
 	docker exec -it openair-cn-cups  /bin/bash -c 'cd /workspaces/openair-cn-cups && /bin/bash'
 
 docker-create-network: ## Create macvlan with subnet 192.168.15.0 using enp0s20f0u1 interface
-	docker network create -d macvlan --subnet=192.168.15.0/24 --gateway=192.168.15.1 -o parent=enp0s20f0u1 macvlan-enp0s20f0u1
+	docker network create -d macvlan --subnet=192.168.15.0/24 --gateway=192.168.15.1 -o parent=enp0s20f0u4u2u4 macvlan-enp0s20f0u4u2u4
 
 docker-setup-network: ## Connect maclan on container openair-cn-cup and create spgwu interfaces
-	docker network connect macvlan-enp0s20f0u1 openair-cn-cups
+	docker network connect macvlan-enp0s20f0u4u2u4 openair-cn-cups
 
 docker-config-spgwu-iface: ## Create and configure spgwu interefaces 
 	$(PROJECT_DIR)/configs/config-spgwu-interface.sh 
@@ -74,3 +78,18 @@ run-spgwu: ## Run spgwu
 
 kill-spgwu: ## Kill spgwu
 	echo "TODO" 
+
+# TODO navarrothiago - include from upf-bpf, avoiding hardcoded. 
+config-veth-pair: ## Config veth pair. It must be run before <run-*> targets
+	sudo ./build/ext/upf-bpf/tests/scripts/config_veth_pair.sh $(DEVICE_IN)
+
+setup: config_veth_pair ## Install upf-bpf dependencies
+	cd build/ext/upf-bpf/ && \
+	make clean-all && \
+	make setup && \
+	make install && \
+	cd ../../../
+
+force-xdp-deload: ## Kill all and force deload XDP programs
+	sudo ip link set dev $(DEVICE_IN) xdpgeneric off
+	sudo ip link set dev $(DEVICE_OUT) xdpgeneric off

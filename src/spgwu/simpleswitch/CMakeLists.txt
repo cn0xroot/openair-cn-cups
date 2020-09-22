@@ -28,10 +28,15 @@ include_directories(${SRC_TOP_DIR}/oai_spgwu)
 include_directories(${SRC_TOP_DIR}/pfcp)
 include_directories(${SRC_TOP_DIR}/spgwu)
 include_directories(${SRC_TOP_DIR}/udp)
+include_directories(${SRC_TOP_DIR}/../build/ext/upf-bpf/include)
 include_directories(${SRC_TOP_DIR}/../build/ext/spdlog/include)
-
+include_directories(${SRC_TOP_DIR}/../build/ext/upf-bpf/src)
+include_directories(${SRC_TOP_DIR}/../build/ext/upf-bpf/src/bpf)
+include_directories(${SRC_TOP_DIR}/../build/ext/upf-bpf/src/skel)
+# include_directories(/workspaces/openair-cn-cups/build/ext/upf-bpf/package/include)
 
 #find_library(FOLLY folly)
+find_package(UpfBpf CONFIG REQUIRED)
 
 add_library (SPGW_SWITCH STATIC
   pfcp_far.cpp
@@ -40,4 +45,12 @@ add_library (SPGW_SWITCH STATIC
   pfcp_switch.cpp
   spgwu_s1u.cpp
   )
+
+file(GENERATE 
+    OUTPUT "includes-spgwu-switch.txt" 
+    CONTENT "$<TARGET_PROPERTY:SPGW_SWITCH,INCLUDE_DIRECTORIES>\n"
+)
+
+  target_link_libraries(SPGW_SWITCH INTERFACE UpfBpf::upf_xdp)
+  # add_dependencies(SPGW_SWITCH upf_bpf)
   

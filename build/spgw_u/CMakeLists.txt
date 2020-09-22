@@ -29,6 +29,18 @@ set (OPENAIRCN_DIR   $ENV{OPENAIRCN_DIR})
 set (BUILD_TOP_DIR   ${OPENAIRCN_DIR}/build)
 set (SRC_TOP_DIR     $ENV{OPENAIRCN_DIR}/src)
 
+# find_package(Threads REQUIRED COMPONETS Threads::Threads)
+
+find_package(UpfBpf CONFIG REQUIRED)
+
+if(NOT TARGET spdlog)
+    # Stand-alone build
+    find_package(spdlog REQUIRED)
+    message("SPDLOG package found.")
+endif()
+
+message("UpfBpf_DIR: ${UpfBpf_DIR}")
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../src/oai_spgwu/CMakeLists.txt)
 
 ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../src/spgwu ${CMAKE_CURRENT_BINARY_DIR}/spgw_u)

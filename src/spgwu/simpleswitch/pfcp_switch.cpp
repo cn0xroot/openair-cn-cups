@@ -46,6 +46,10 @@
 #include <linux/if_packet.h>
 #include <stdexcept>
 #include <net/ethernet.h>
+#include <UPFProgramManager.h>
+#include <SessionManager.h>
+#include <interfaces/RulesUtilitiesImpl.h>
+
 
 using namespace pfcp;
 using namespace gtpv1u;
@@ -370,6 +374,9 @@ pfcp_switch::pfcp_switch() : seid_generator_(), teid_s1u_generator_(),
   setup_pdn_interfaces();
   thread_sock_ = thread(&pfcp_switch::pdn_read_loop,this, spgwu_cfg.itti.sx_sched_params);
   thread_sock_.detach();
+  
+  mpRulesImpl = std::make_shared<RulesUtilitiesImpl>();
+  UPFProgramManager::getInstance().setup(mpRulesImpl);
 }
 //------------------------------------------------------------------------------
 bool pfcp_switch::get_pfcp_session_by_cp_fseid(const pfcp::fseid_t& fseid, std::shared_ptr<pfcp::pfcp_session>& session) const
@@ -531,6 +538,7 @@ void pfcp_switch::handle_pfcp_session_establishment_request(std::shared_ptr<itti
     pfcp_session* session = nullptr;
     if (not exist) {
       session = new pfcp_session(fseid, generate_seid());
+      UPFProgramManager::getInstance().getSessionManager()->createSession(std::make_shared<SessionBpfImpl>(*session));
 
       for (auto it : req->pfcp_ies.create_fars) {
         create_far& cr_far = it;

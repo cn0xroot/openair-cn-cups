@@ -21,8 +21,8 @@
 #include <stdexcept>
 #include <vector>
 
-//#define SPDLOG_LEVEL_NAMES { "trace", "debug", "info",  "warning", "error", "critical", "off" };
-#define SPDLOG_LEVEL_NAMES { "trace", "debug", "info ",  "start", "warn ", "error", "off  " };
+// #define SPDLOG_LEVEL_NAMES { "trace", "debug", "info",  "warning", "error", "critical", "off" };
+#define SPDLOG_LEVEL_NAMES { "trace", "debug", "info",  "start", "warning", "error", "off" };
 
 #define SPDLOG_ENABLE_SYSLOG
 #include "spdlog/spdlog.h"
