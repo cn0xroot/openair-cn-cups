@@ -137,6 +137,78 @@ public:
     io_service.run();
   }
 
+  void send_session_establishment_request(uint32_t &teid)
+  {
+    pfcp::fteid_t fteid;
+    memset(&fteid, 0, sizeof(pfcp::fteid_t));
+    fteid.ch = true;
+    uint64_t lseid = 0;
+    uint8_t cause = pfcp::CAUSE_VALUE_SYSTEM_FAILURE;
+
+    // Table 7.5.2.2-1: Create PDR IE within PFCP Session Establishment Request
+    // Check pfcp::pfcp_pdr::look_up_pack_in_access
+    pfcp::create_pdr create_pdr;
+    create_pdr.set(pfcp::pdr_id_t());
+
+    //  Create PDI IE for Create PDR.
+    pfcp::pdi pdi;
+    pdi.set(pfcp::source_interface_t{pfcp::INTERFACE_VALUE_ACCESS});
+    pdi.set(pfcp::ue_ip_address_t{
+      ipv6d : 0, // This bit is only applicable to the UE IP address IE in the PDI IE and whhen V6 bit is set to "1". If this bit is set to "1", then the IPv6 Prefix Delegation Bits field shall be present, otherwise the UP function shall consider IPv6 prefix is default /64.
+      sd : 0,    // This bit is only applicable to the UE IP Address IE in the PDI IE. It shall be set to "0" and ignored by the receiver in IEs other than PDI IE. In the PDI IE, if this bit is set to "0", this indicates a Source IP address; if this bit is set to "1", this indicates a Destination IP address.
+      v4 : 1,    // If this bit is set to "1", then the IPv4 address field shall be present in the UE IP Address, otherwise the IPv4 address field shall not be present.
+      v6 : 0,    // If this bit is set to "1", then the IPv6 address field shall be present in the UE IP Address, otherwise the IPv6 address field shall not be present.
+      ipv4_address : *m_newPacket.getLayerOfType<pcpp::IPv4Layer>()->getSrcIpAddress().toInAddr()
+    });
+    pdi.set(fteid);
+    pdi.set(pfcp::sdf_filter_t());
+    create_pdr.set(pdi);
+
+    // Create Outer Header Removal IE.
+    create_pdr.set(pfcp::outer_header_removal_t{
+        .outer_header_removal_description = OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4});
+
+    // Create precedence for Create PDR IE.
+    create_pdr.set(pfcp::precedence_t{0});
+    std::shared_ptr<pfcp::pfcp_pdr> pdr = std::make_shared<pfcp::pfcp_pdr>(create_pdr);
+
+    // Create paramenter for Create FAR IE.
+    pfcp::far_id_t far_id = {0};
+    pfcp::apply_action_t far_apply_action;
+    far_apply_action.forw = true;
+    far_apply_action.dupl = false;
+    pfcp::forwarding_parameters fowarding_parameters;
+    fowarding_parameters.set(pfcp::destination_interface_t{pfcp::INTERFACE_VALUE_CORE});
+
+    // Create FAR
+    pfcp::create_far create_far;
+    create_far.set(far_id);
+    create_far.set(far_apply_action);
+    create_far.set(fowarding_parameters);
+    create_pdr.set(far_id);
+
+    // Create source request.
+    std::shared_ptr<itti_sxab_session_establishment_request> sreq;
+    task_id_t origin = TASK_FIRST, destination = TASK_FIRST;
+    sreq = std::make_shared<itti_sxab_session_establishment_request>(origin, destination);
+
+    // Initialize IE in request.
+    pfcp::fseid_t fseid;
+    memset(&fseid, 0, sizeof(pfcp::fseid_t));
+    sreq->pfcp_ies.set(fseid);
+    sreq->pfcp_ies.set(create_pdr);
+    sreq->pfcp_ies.set(create_far);
+
+    std::shared_ptr<itti_sxab_session_establishment_response> resp;
+    resp = std::make_shared<itti_sxab_session_establishment_response>(origin, destination);
+
+    // Session establishment request.
+    pfcp_switch_inst->handle_pfcp_session_establishment_request(sreq, resp.get());
+    ASSERT_EQ(resp->pfcp_ies.created_pdrs.size(), 1);
+    teid = resp->pfcp_ies.created_pdrs[0].local_fteid.second.teid;
+    ASSERT_EQ(teid, 1);
+  }
+
   // gtpu client.
   std::shared_ptr<gtpu_l4_stack_test> mp_gptu_client;
 
@@ -186,77 +258,19 @@ TEST_F(SpgwuTests, send_GTPU_G_PDU_received_GTPU_ERROR_INDICATION)
   std::cin.get();
 }
 
+TEST_F(SpgwuTests, send_session_establishment_request)
+{
+  uint32_t teid;
+  send_session_establishment_request(teid);
+
+  // Pause.
+  std::cin.get();
+}
+
 TEST_F(SpgwuTests, send_GTPU_G_PDU_success)
 {
-  pfcp::fteid_t fteid;
-  memset(&fteid, 0, sizeof(pfcp::fteid_t));
-  fteid.ch = true;
-  uint64_t lseid = 0;
-  uint8_t cause = pfcp::CAUSE_VALUE_SYSTEM_FAILURE;
-
-  // Table 7.5.2.2-1: Create PDR IE within PFCP Session Establishment Request
-  // Check pfcp::pfcp_pdr::look_up_pack_in_access
-  pfcp::create_pdr create_pdr;
-  create_pdr.set(pfcp::pdr_id_t());
-
-  //  Create PDI IE for Create PDR.
-  pfcp::pdi pdi;
-  pdi.set(pfcp::source_interface_t{pfcp::INTERFACE_VALUE_ACCESS});
-  pdi.set(pfcp::ue_ip_address_t{
-    ipv6d : 0, // This bit is only applicable to the UE IP address IE in the PDI IE and whhen V6 bit is set to "1". If this bit is set to "1", then the IPv6 Prefix Delegation Bits field shall be present, otherwise the UP function shall consider IPv6 prefix is default /64.
-    sd : 0,    // This bit is only applicable to the UE IP Address IE in the PDI IE. It shall be set to "0" and ignored by the receiver in IEs other than PDI IE. In the PDI IE, if this bit is set to "0", this indicates a Source IP address; if this bit is set to "1", this indicates a Destination IP address.
-    v4 : 1,    // If this bit is set to "1", then the IPv4 address field shall be present in the UE IP Address, otherwise the IPv4 address field shall not be present.
-    v6 : 0,    // If this bit is set to "1", then the IPv6 address field shall be present in the UE IP Address, otherwise the IPv6 address field shall not be present.
-    ipv4_address : *m_newPacket.getLayerOfType<pcpp::IPv4Layer>()->getSrcIpAddress().toInAddr()
-  });
-  pdi.set(fteid);
-  pdi.set(pfcp::sdf_filter_t());
-  create_pdr.set(pdi);
-
-  // Create Outer Header Removal IE.
-  create_pdr.set(pfcp::outer_header_removal_t{
-      .outer_header_removal_description = OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4});
-
-  // Create precedence for Create PDR IE.
-  create_pdr.set(pfcp::precedence_t{0});
-  std::shared_ptr<pfcp::pfcp_pdr> pdr = std::make_shared<pfcp::pfcp_pdr>(create_pdr);
-
-  // Create paramenter for Create FAR IE.
-  pfcp::far_id_t far_id = {0};
-  pfcp::apply_action_t far_apply_action;
-  far_apply_action.forw = true;
-  far_apply_action.dupl = false;
-  pfcp::forwarding_parameters fowarding_parameters;
-  fowarding_parameters.set(pfcp::destination_interface_t{pfcp::INTERFACE_VALUE_CORE});
-
-  // Create FAR
-  pfcp::create_far create_far;
-  create_far.set(far_id);
-  create_far.set(far_apply_action);
-  create_far.set(fowarding_parameters);
-  create_pdr.set(far_id);
-
-  // Create source request.
-  std::shared_ptr<itti_sxab_session_establishment_request> sreq;
-  task_id_t origin = TASK_FIRST, destination = TASK_FIRST;
-  sreq = std::make_shared<itti_sxab_session_establishment_request>(origin, destination);
-
-  // Initialize IE in request.
-  pfcp::fseid_t fseid;
-  memset(&fseid, 0, sizeof(pfcp::fseid_t));
-  sreq->pfcp_ies.set(fseid);
-  sreq->pfcp_ies.set(create_pdr);
-  sreq->pfcp_ies.set(create_far);
-
-  std::shared_ptr<itti_sxab_session_establishment_response> resp;
-  resp = std::make_shared<itti_sxab_session_establishment_response>(origin, destination);
-
-  // Session establishment request.
-  pfcp_switch_inst->handle_pfcp_session_establishment_request(sreq, resp.get());
-  ASSERT_EQ(resp->pfcp_ies.created_pdrs.size(), 1);
-  auto teid = resp->pfcp_ies.created_pdrs[0].local_fteid.second.teid;
-  ASSERT_EQ(teid, 1);
-
+  uint32_t teid;
+  send_session_establishment_request(teid);
 
   // Find the interface by IP address.
   // Check SGi in spgw_u-dev.conf file.

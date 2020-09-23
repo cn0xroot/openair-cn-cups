@@ -11,7 +11,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/spgw_u/build/test/spgwu-test",
             "args": [
-              "--gtest_filter=SpgwuTests.send_GTPU_G_PDU_success"
+              "--gtest_filter=SpgwuTests.send_session_establishment_request"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

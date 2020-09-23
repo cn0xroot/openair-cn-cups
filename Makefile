@@ -19,7 +19,7 @@ TEST_DIR=$(PROJECT_DIR)/build/Debug
 NUM_THREADS=8
 
 # Interface to be configured with veth pair.
-DEVICE_IN=eth0
+DEVICE_IN=enp0s20f0u4u2u4
 DEVICE_OUT=veth0
 
 .PHONY: help
@@ -83,7 +83,7 @@ kill-spgwu: ## Kill spgwu
 config-veth-pair: ## Config veth pair. It must be run before <run-*> targets
 	sudo ./build/ext/upf-bpf/tests/scripts/config_veth_pair.sh $(DEVICE_IN)
 
-setup: config_veth_pair ## Install upf-bpf dependencies
+setup: docker-config-spgwu-iface config-veth-pair ## Install upf-bpf dependencies
 	cd build/ext/upf-bpf/ && \
 	make clean-all && \
 	make setup && \
@@ -93,3 +93,9 @@ setup: config_veth_pair ## Install upf-bpf dependencies
 force-xdp-deload: ## Kill all and force deload XDP programs
 	sudo ip link set dev $(DEVICE_IN) xdpgeneric off
 	sudo ip link set dev $(DEVICE_OUT) xdpgeneric off
+
+build-standalone-test: ## Build standalone test
+	cmake -Btest/standalone/build -Htest/standalone/ && \
+	cmake --build test/standalone/build --target spgwu_standalone_test
+
+setup-interfaces: docker-config-spgwu-iface config-veth-pair ## Setup interfaces only

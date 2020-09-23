@@ -31,6 +31,7 @@
 	// Uncomment when using a ptrace-based debugger like C++, Go, and Rust
 	"runArgs": [ 
     "--cap-add=SYS_PTRACE", 
+    "--net=host",
     "--security-opt", 
     "seccomp=unconfined", 
     "--cap-add=NET_ADMIN", 

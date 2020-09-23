@@ -10,7 +10,6 @@ It is assumed that you have two network device, one of them is the enp0s20f0u1 (
 1. Setup [Developing inside a Container](https://code.visualstudio.com/docs/remote/container) in vscode
 1. [Open the repository workspace using vscode in a conteiner](https://code.visualstudio.com/docs/remote/containers#_open-an-existing-workspace-in-a-container) (it will take some time)
 1. Setup conteiner network: ```make docker-setup-network```  
-1. Create and configure spgwu interfaces: ```make docker-config-spgwu-iface```  
 1. Clone upf-bpf in `build/ext`: `git clone git@github.com:navarrothiago/upf-bpf.git build/ext`
 1. Setup upf-bpf environment (install dependencies and creates veth pairs): `make setup`
 1. Run spwgu standalone: `make run-spgwu`
@@ -18,6 +17,9 @@ It is assumed that you have two network device, one of them is the enp0s20f0u1 (
 ## Environment
 
 See [environment.](https://github.com/navarrothiago/masters/wiki/OpenAirInterface#lte-test-environment)
+
+Pay attention with the MAC address and with the interface name that will be used.  
+Because of there is a hardacoded definition, maybe you need to change the values in [Makefile](Makefile) of this project and in [Makefile](build/ext/upf-bpf/Makefile) of the upf-bpf project, or in scapy [script](build/ext/upf-bpf/tests/scripts/config_veth_pair.sh).
 
 ## Build code using Visual Studio Code
 
