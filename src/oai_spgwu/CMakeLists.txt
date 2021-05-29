@@ -262,6 +262,7 @@ else(STATIC_LINKING)
     SET(BUILD_SHARED_LIBS ON)
 endif(STATIC_LINKING)
 
+cmake_policy(SET CMP0070 OLD)
 file(GENERATE 
     OUTPUT "includes-spgwu.txt" 
     CONTENT "$<TARGET_PROPERTY:spgwu,INCLUDE_DIRECTORIES>\n"

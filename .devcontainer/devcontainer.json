@@ -19,7 +19,18 @@
 		"ms-vscode.cpptools",
 		"twxs.cmake",
     "cschlosser.doxdocgen",
-    "amiralizadeh9480.cpp-helper"
+    "amiralizadeh9480.cpp-helper",
+    "eamodio.gitlens",
+    "albert.tabout",
+    "redhat.vscode-yaml",
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "l13rary.l13-sh-snippets",
+    "foxundermoon.shell-format",
+    "TabNine.tabnine-vscode",
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-portuguese",
+    "shan.code-settings-sync"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
@@ -38,7 +49,8 @@
     "--privileged", 
     "--name=openair-cn-cups",
     "-v",
-    "${localEnv:HOME}/.bashrc:/root/.bashrc"
+    "${localEnv:HOME}/.bashrc:/root/.bashrc",
+		"--env-file", "env.sh"
   ],
 
 	// Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-in-docker.

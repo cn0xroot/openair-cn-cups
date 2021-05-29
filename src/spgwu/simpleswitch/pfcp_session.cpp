@@ -62,14 +62,14 @@ void pfcp_session::add(std::shared_ptr<pfcp::pfcp_far> far)
 {
   Logger::spgwu_sx().info( "pfcp_session::add(far) seid " SEID_FMT " ", seid);
   fars.push_back(far);
-  UPFProgramManager::getInstance().getSessionManager()->addFAR(seid, std::make_shared<ForwardingActionRulesImpl>(*far));
+  UserPlaneComponent::getInstance().getSessionManager()->addFAR(seid, std::make_shared<ForwardingActionRulesImpl>(*far));
 }
 //------------------------------------------------------------------------------
 void pfcp_session::add(std::shared_ptr<pfcp::pfcp_pdr> pdr)
 {
   Logger::spgwu_sx().info( "pfcp_session::add(pdr) seid " SEID_FMT " ", seid);
   pdrs.push_back(pdr);
-  UPFProgramManager::getInstance().getSessionManager()->addPDR(seid, std::make_shared<PacketDetectionRulesImpl>(*pdr));
+  UserPlaneComponent::getInstance().getSessionManager()->addPDR(seid, std::make_shared<PacketDetectionRulesImpl>(*pdr));
 }
 //------------------------------------------------------------------------------
 bool pfcp_session::remove(const pfcp::far_id_t& far_id, uint8_t& cause_value)
@@ -240,6 +240,7 @@ bool pfcp_session::create(const pfcp::create_pdr& cr_pdr, pfcp::cause_t& cause, 
     std::shared_ptr<pfcp_pdr> spdr = std::shared_ptr<pfcp_pdr>(pdr);
     pdr->set(get_up_seid());
     if ((pdi.ue_ip_address.first) && (pdi.ue_ip_address.second.v4)) {
+      //  TODO (navarrothiago) put code here!
       pfcp_switch_inst->add_pfcp_dl_pdr_by_ue_ip(be32toh(pdi.ue_ip_address.second.ipv4_address.s_addr), spdr);
     } else {
       cause.cause_value = CAUSE_VALUE_REQUEST_REJECTED;

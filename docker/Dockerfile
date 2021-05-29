@@ -13,7 +13,7 @@ RUN apt-get update && \
 # TODO: Instead of clone, we should download only de dependencies.
 # TODO: Remove repository in the end.
 # TODO: Check if this really needed. vscode mount this on container.
-RUN git clone --depth=1 --branch=$GIT_TAG https://github.com/OPENAIRINTERFACE/openair-cn-cups.git
+RUN git clone --depth=1 --branch=$GIT_TAG https://github.com/navarrothiago/openair-cn-cups.git
 
 RUN git clone --depth=1 --branch=master https://github.com/gabime/spdlog.git openair-cn-cups/build/ext/spdlog
 
@@ -123,6 +123,13 @@ RUN apt-get update && \
 
 RUN apt-get update && \
       apt-get -y install ethtool
+
+# Ubuntu 20.04 already support cmake 3.16.3.
+# RUN if [ $BASE_DEV_IMAGE != "ubuntu:20.04" ];  then apt-get update && \
+RUN apt-get update && \
+      apt-get -y install libssl-dev && \
+      wget -c  https://github.com/Kitware/CMake/releases/download/v3.16.3/cmake-3.16.3.tar.gz -O - | tar -xz && \
+      cd cmake-3.16.3 && ./bootstrap && make -j4 && make install; fi
 
 USER root
 #USER $UNAME

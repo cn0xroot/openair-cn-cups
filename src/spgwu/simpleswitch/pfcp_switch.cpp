@@ -46,7 +46,7 @@
 #include <linux/if_packet.h>
 #include <stdexcept>
 #include <net/ethernet.h>
-#include <UPFProgramManager.h>
+#include <UserPlaneComponent.h>
 #include <SessionManager.h>
 #include <interfaces/RulesUtilitiesImpl.h>
 
@@ -376,7 +376,7 @@ pfcp_switch::pfcp_switch() : seid_generator_(), teid_s1u_generator_(),
   thread_sock_.detach();
   
   mpRulesImpl = std::make_shared<RulesUtilitiesImpl>();
-  UPFProgramManager::getInstance().setup(mpRulesImpl);
+  UserPlaneComponent::getInstance().setup(mpRulesImpl, spgwu_cfg.sgi.if_name, spgwu_cfg.s1_up.if_name);
 }
 //------------------------------------------------------------------------------
 bool pfcp_switch::get_pfcp_session_by_cp_fseid(const pfcp::fseid_t& fseid, std::shared_ptr<pfcp::pfcp_session>& session) const
@@ -520,6 +520,7 @@ std::string pfcp_switch::to_string() const
 bool pfcp_switch::create_packet_in_access(std::shared_ptr<pfcp::pfcp_pdr>& pdr, const pfcp::fteid_t& in, uint8_t& cause)
 {
   cause = CAUSE_VALUE_REQUEST_ACCEPTED;
+  //  TODO (navarrothiago) put code here!
   add_pfcp_ul_pdr_by_up_teid(in.teid, pdr);
   return true;
 }
@@ -538,7 +539,7 @@ void pfcp_switch::handle_pfcp_session_establishment_request(std::shared_ptr<itti
     pfcp_session* session = nullptr;
     if (not exist) {
       session = new pfcp_session(fseid, generate_seid());
-      UPFProgramManager::getInstance().getSessionManager()->createSession(std::make_shared<SessionBpfImpl>(*session));
+      UserPlaneComponent::getInstance().getSessionManager()->createSession(std::make_shared<SessionBpfImpl>(*session));
 
       for (auto it : req->pfcp_ies.create_fars) {
         create_far& cr_far = it;

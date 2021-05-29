@@ -11,7 +11,6 @@ public:
   PacketDetectionRulesImpl(pfcp::pfcp_pdr &myPdr);
   PacketDetectionRulesImpl(pfcp_pdr_t_ &myPdr);
   virtual ~PacketDetectionRulesImpl();
-  uint64_t getLocalSeid() override;
   teid_t_ getTeid() override;
   pdr_id_t_ getPdrId() override;
   precedence_t_ getPrecedence() override;
