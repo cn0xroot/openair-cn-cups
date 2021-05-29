@@ -19,8 +19,8 @@ TEST_DIR=$(PROJECT_DIR)/build/Debug
 NUM_THREADS=8
 
 # Interface to be configured with veth pair.
-DEVICE_IN=enp0s20f0u9
-DEVICE_OUT=veth0
+DEVICE_IN=enp1s0f1
+DEVICE_OUT=enp0s20f0u8
 
 .PHONY: help
 
@@ -76,6 +76,9 @@ docker-build: ## Build docker image
 run-spgwu: ## Run spgwu 
 	$(PROJECT_DIR)/build/spgw_u/build/spgwu -c ./etc/spgw_u-dev.conf -o
 
+run-spgwu-test: force-xdp-deload ## Run spgwu test
+	$(PROJECT_DIR)/build/spgw_u/build/test/spgwu-test --gtest_filter=SpgwuTests.send_session_establishment_request
+
 kill-spgwu: ## Kill spgwu
 	echo "TODO" 
 
@@ -83,9 +86,15 @@ kill-spgwu: ## Kill spgwu
 config-veth-pair: ## Config veth pair. It must be run before <run-*> targets
 	sudo ./build/ext/upf-bpf/tests/scripts/config_veth_pair 
 
-setup: docker-config-spgwu-iface config-veth-pair ## Install upf-bpf dependencies
+setup-upf-bpf: ## Setup upf-bpf dependency
 	cd build/ext/upf-bpf/ && \
 	make setup && \
+	cd ../../../
+
+setup: docker-config-spgwu-iface config-veth-pair setup-upf-bpf install-upf-bpf ## Setup upf-bpf dependencies
+
+install-upf-bpf: ## Install upf-bpf headers and library.
+	cd build/ext/upf-bpf/ && \
 	make install && \
 	cd ../../../
 

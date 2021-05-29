@@ -407,7 +407,7 @@ check_install_spgwu_deps() {
       guile-2.0-dev \
       libcurl4-gnutls-dev \
       libevent-dev \
-      libgcrypt11-dev \
+      libgcrypt20-dev \
       libgmp-dev \
       libhogweed? \
       libidn2-0-dev \

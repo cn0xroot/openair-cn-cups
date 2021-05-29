@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 ARG GIT_TAG=2019.w47
 ARG UID=1000
@@ -16,6 +16,11 @@ RUN apt-get update && \
 RUN git clone --depth=1 --branch=$GIT_TAG https://github.com/navarrothiago/openair-cn-cups.git
 
 RUN git clone --depth=1 --branch=master https://github.com/gabime/spdlog.git openair-cn-cups/build/ext/spdlog
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=America/Sao_Pauloa
+RUN apt-get update && \
+      apt-get install -y tzdata
 
 RUN apt-get update && \
       apt-get -y install cmake 
@@ -129,7 +134,79 @@ RUN apt-get update && \
 RUN apt-get update && \
       apt-get -y install libssl-dev && \
       wget -c  https://github.com/Kitware/CMake/releases/download/v3.16.3/cmake-3.16.3.tar.gz -O - | tar -xz && \
-      cd cmake-3.16.3 && ./bootstrap && make -j4 && make install; fi
+      cd cmake-3.16.3 && ./bootstrap && make -j4 && make install
+      #fi
+
+# TODO: pass as ARG
+RUN echo "ENV_FILE=/workspaces/openair-cn-cups/env.sh" >> /etc/environment
+
+
+# BEGIN - Open-Air-Interface packages (check scritpts in scripts folder)
+RUN apt-get update && \
+      apt-get -y install \
+      autoconf \
+      automake \
+      bison \
+      build-essential \
+      cmake \
+      doxygen \
+      flex \
+      gdb \
+      git \ 
+      libconfig++-dev libasio-dev libboost-all-dev \ 
+      guile-2.0-dev \
+      libcurl4-gnutls-dev \
+      libevent-dev \
+      libgcrypt20-dev \
+      libgmp-dev \
+      libhogweed? \
+      libidn2-0-dev \
+      libidn11-dev \
+      libpthread-stubs0-dev \
+      libssl-dev \
+      libtool \
+      libxml2 \
+      libxml2-dev \
+      openssl \
+      python \
+      pkg-config
+
+RUN apt-get update && \
+      apt-get -y install \
+      g++ \
+      cmake \
+      libboost-all-dev \
+      libevent-dev \
+      libdouble-conversion-dev \
+      libgoogle-glog-dev \
+      libgflags-dev \
+      libiberty-dev \
+      liblz4-dev \
+      liblzma-dev \
+      libsnappy-dev \
+      make \
+      zlib1g-dev \
+      binutils-dev \
+      libjemalloc-dev \
+      libssl-dev \
+      pkg-config
+
+RUN cd /tmp; \ 
+    git clone https://github.com/facebook/folly.git; \
+    cd folly; \
+    git checkout -f v2019.11.11.00; \
+    mkdir _build && cd _build; \
+    cmake  ..; \
+    make -j $(nproc); \
+    make install
+
+RUN apt-get update && \
+      apt-get -y install \
+      iproute2 \
+      ethtool \
+      iptables \
+      vlan
+# END - Open-Air-Interface packages (check build_helper)
 
 USER root
 #USER $UNAME
